@@ -229,9 +229,9 @@ python3 -m json.tool .claude-plugin/marketplace.json
 
 ## 📞 联系方式
 
-- **项目维护者**：StartVibe Team
-- **邮箱**：dev@startvibe.com
-- **网址**：https://startvibe.com
+- **项目维护者**：Jianan
+- **邮箱**：startvibe@linlaoshi.top
+- **网址**：https://startvibe.linlaoshi.top
 
 ## 🙏 致谢
 
