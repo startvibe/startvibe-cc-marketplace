@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0.0",
+  "lastModified": 0,
+  "enabled": true,
+  "defaultSound": true,
+  "events": {
+    "stop": {
+      "enabled": true,
+      "sound": true,
+      "urgency": "normal",
+      "customTemplate": {
+        "title": "Claude 响应完成",
+        "message": "Claude 已完成您的请求处理"
+      }
+    },
+    "notification": {
+      "enabled": true,
+      "sound": true,
+      "urgency": "critical",
+      "customTemplate": {
+        "title": "Claude 需要您的注意",
+        "message": "Claude 需要您的确认或输入"
+      }
+    }
+  },
+  "display": {
+    "title": "Claude Code",
+    "message": "{{title}}: {{message}}",
+    "duration": 8,
+    "icon": ""
+  },
+  "platformSettings": {
+    "macos": {
+      "subtitle": "Claude Assistant",
+      "sound": "Glass",
+      "contentImage": "",
+      "open": "",
+      "actions": [],
+      "reply": false,
+      "closeLabel": "关闭"
+    },
+    "windows": {
+      "appID": "ClaudeCode.Notify",
+      "toastStyle": "modern",
+      "icon": "",
+      "id": 0,
+      "remove": 0,
+      "install": "start-menu"
+    },
+    "linux": {
+      "urgency": "normal",
+      "category": "im.received",
+      "app_name": "Claude Code",
+      "timeout": 8,
+      "hint": ""
+    }
+  },
+  "quietHours": {
+    "enabled": false,
+    "start": "22:00",
+    "end": "08:00",
+    "weekdaysOnly": false
+  },
+  "performance": {
+    "maxNotificationRetries": 3,
+    "notificationTimeout": 5000,
+    "hookTimeout": 5000
+  },
+  "logging": {
+    "enabled": true,
+    "level": "info",
+    "maxLogSize": 10485760,
+    "maxLogFiles": 5
+  }
+}

@@ -1,0 +1,232 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://claude-code.startvibe.com/schemas/notification-config",
+  "title": "Notification Configuration Schema",
+  "description": "通知插件配置文件的 JSON Schema",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "配置文件版本号",
+      "examples": ["1.0.0", "1.0.1", "2.0.0"]
+    },
+    "lastModified": {
+      "type": "integer",
+      "description": "最后修改时间戳（Unix时间戳）",
+      "minimum": 0
+    },
+    "enabled": {
+      "type": "boolean",
+      "description": "是否启用通知功能",
+      "default": true
+    },
+    "defaultSound": {
+      "type": "boolean",
+      "description": "默认是否播放声音提醒",
+      "default": true
+    },
+    "events": {
+      "type": "object",
+      "description": "事件类型配置",
+      "properties": {
+        "stop": {
+          "$ref": "#/definitions/EventConfig"
+        },
+        "notification": {
+          "$ref": "#/definitions/EventConfig"
+        }
+      },
+      "required": ["stop", "notification"],
+      "additionalProperties": false
+    },
+    "display": {
+      "type": "object",
+      "description": "通知显示设置",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "通知标题模板，支持变量替换",
+          "minLength": 1,
+          "maxLength": 100,
+          "default": "Claude Code",
+          "examples": ["Claude Code", "任务完成", "需要确认"]
+        },
+        "message": {
+          "type": "string",
+          "description": "通知消息模板，支持变量替换",
+          "minLength": 1,
+          "maxLength": 500,
+          "default": "{{title}}: {{message}}",
+          "examples": ["任务完成: {{message}}", "等待确认: {{message}}"]
+        },
+        "duration": {
+          "type": "integer",
+          "description": "通知显示持续时间（秒）",
+          "minimum": 1,
+          "maximum": 30,
+          "default": 5
+        },
+        "icon": {
+          "type": "string",
+          "description": "自定义图标文件路径（可选）",
+          "maxLength": 200
+        }
+      },
+      "required": ["title", "message", "duration"],
+      "additionalProperties": false
+    },
+    "platformSettings": {
+      "type": "object",
+      "description": "平台特定配置",
+      "properties": {
+        "macos": {
+          "$ref": "#/definitions/MacOSSettings"
+        },
+        "windows": {
+          "$ref": "#/definitions/WindowsSettings"
+        },
+        "linux": {
+          "$ref": "#definitions/LinuxSettings"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": ["version", "enabled", "events", "display"],
+  "additionalProperties": false,
+  "definitions": {
+    "EventConfig": {
+      "type": "object",
+      "description": "事件配置",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "是否启用此类型的通知",
+          "default": true
+        },
+        "sound": {
+          "type": "boolean",
+          "description": "是否播放声音提醒",
+          "default": true
+        },
+        "urgency": {
+          "type": "string",
+          "enum": ["low", "normal", "critical"],
+          "description": "通知紧急程度",
+          "default": "normal"
+        },
+        "customTemplate": {
+          "type": "object",
+          "description": "自定义通知模板",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "自定义标题模板",
+              "maxLength": 200
+            },
+            "message": {
+              "type": "string",
+              "description": "自定义消息模板",
+              "maxLength": 500
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["enabled"],
+      "additionalProperties": false
+    },
+    "MacOSSettings": {
+      "type": "object",
+      "description": "macOS 平台特定设置",
+      "properties": {
+        "appName": {
+          "type": "string",
+          "description": "应用程序名称",
+          "maxLength": 100,
+          "default": "Claude Code"
+        },
+        "group": {
+          "type": "string",
+          "description": "通知组标识符",
+          "maxLength": 100,
+          "default": "ClaudeCode"
+        },
+        "sound": {
+          "type": "string",
+          "description": "系统声音名称",
+          "maxLength": 50,
+          "default": "Glass"
+        },
+        "activate": {
+          "type": "string",
+          "description": "激活的应用程序包标识符",
+          "maxLength": 200
+        }
+      },
+      "additionalProperties": false
+    },
+    "WindowsSettings": {
+      "type": "object",
+      "description": "Windows 平台特定设置",
+      "properties": {
+        "appId": {
+          "type": "string",
+          "description": "Windows 应用程序 ID",
+          "maxLength": 100,
+          "default": "ClaudeCode.Notify"
+        },
+        "toastStyle": {
+          "type": "string",
+          "enum": ["classic", "modern"],
+          "description": "通知样式",
+          "default": "modern"
+        },
+        "actions": {
+          "type": "boolean",
+          "description": "是否启用操作按钮",
+          "default": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "LinuxSettings": {
+      "type": "object",
+      "description": "Linux 平台特定设置",
+      "properties": {
+        "urgency": {
+          "type": "string",
+          "enum": ["low", "normal", "critical"],
+          "description": "默认通知紧急程度",
+          "default": "normal"
+        },
+        "category": {
+          "type": "string",
+          "description": "通知分类",
+          "maxLength": 100,
+          "default": "im.received"
+        },
+        "expireTime": {
+          "type": "integer",
+          "description": "通知过期时间（毫秒）",
+          "minimum": 1000,
+          "maximum": 60000,
+          "default": 5000
+        },
+        "hint": {
+          "type": "string",
+          "description": "桌面提示类型",
+          "maxLength": 50,
+          "enum": ["string", "image", "desktop", "document"]
+        },
+        "icon": {
+          "type": "string",
+          "description": "图标文件路径或名称",
+          "maxLength": 200
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

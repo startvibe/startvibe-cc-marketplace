@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "notify-plugin",
+  "version": "1.0.0",
+  "description": "Cross-platform system notifications for Claude Code events using native platform tools",
+  "author": "StartVibe Team",
+  "license": "MIT",
+  "keywords": [
+    "notification",
+    "system",
+    "utility",
+    "cross-platform",
+    "native"
+  ],
+  "engines": {
+    "claude-code": ">=1.0.0"
+  },
+  "marketplace": {
+    "category": "productivity",
+    "tags": ["notification", "system", "utility"],
+    "featured": false,
+    "repository": "https://github.com/startvibe/startvibe-cc-marketplace"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/startvibe/startvibe-cc-marketplace"
+  }
+}
