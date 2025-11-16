@@ -8,21 +8,33 @@
  * 许可证: MIT
  */
 
+/* eslint-disable no-console */
+
 const fs = require('fs');
 const path = require('path');
 
 class ConfigManager {
   constructor() {
-    this.pluginRoot = process.env.CLAUDE_PLUGIN_ROOT || path.resolve(__dirname, '..');
+    this.pluginRoot =
+      process.env.CLAUDE_PLUGIN_ROOT || path.resolve(__dirname, '..');
     this.configDir = path.join(this.pluginRoot, 'config');
-    this.userConfigDir = path.join(process.env.HOME || process.env.USERPROFILE, '.claude-code', 'notify-plugin');
-    this.logDir = path.join(process.env.HOME || process.env.USERPROFILE, '.claude-code', 'notify-plugin', 'logs');
+    this.userConfigDir = path.join(
+      process.env.HOME || process.env.USERPROFILE,
+      '.claude-code',
+      'notify-plugin'
+    );
+    this.logDir = path.join(
+      process.env.HOME || process.env.USERPROFILE,
+      '.claude-code',
+      'notify-plugin',
+      'logs'
+    );
 
     // 配置文件加载优先级
     this.configPaths = [
       path.join(this.configDir, 'user-config.json'),
       path.join(this.userConfigDir, 'config.json'),
-      path.join(this.configDir, 'default-config.json')
+      path.join(this.configDir, 'default-config.json'),
     ];
   }
 
@@ -37,7 +49,10 @@ class ConfigManager {
     // 按优先级尝试加载配置文件
     for (const configFilePath of this.configPaths) {
       try {
-        if (fs.existsSync(configFilePath) && fs.statSync(configFilePath).isFile()) {
+        if (
+          fs.existsSync(configFilePath) &&
+          fs.statSync(configFilePath).isFile()
+        ) {
           const content = fs.readFileSync(configFilePath, 'utf8');
           const parsedConfig = JSON.parse(content);
 
@@ -46,11 +61,14 @@ class ConfigManager {
             configPath = configFilePath;
             break;
           } else {
+            // eslint-disable-next-line no-console
             console.warn(`配置文件格式无效: ${configFilePath}`);
           }
         }
       } catch (error) {
-        console.warn(`加载配置文件失败: ${configFilePath}, 错误: ${error.message}`);
+        console.warn(
+          `加载配置文件失败: ${configFilePath}, 错误: ${error.message}`
+        );
       }
     }
 
@@ -66,7 +84,7 @@ class ConfigManager {
     // 记录配置加载信息
     this.logInfo('config_loaded', {
       configPath: configPath,
-      configVersion: config.version
+      configVersion: config.version,
     });
 
     return config;
@@ -78,7 +96,7 @@ class ConfigManager {
    */
   getDefaultConfig() {
     return {
-      version: "1.0.0",
+      version: '1.0.0',
       lastModified: Date.now(),
       enabled: true,
       defaultSound: true,
@@ -86,71 +104,71 @@ class ConfigManager {
         stop: {
           enabled: true,
           sound: true,
-          urgency: "normal",
+          urgency: 'normal',
           customTemplate: {
-            title: "Claude 响应完成",
-            message: "Claude 已完成您的请求处理"
-          }
+            title: 'Claude 响应完成',
+            message: 'Claude 已完成您的请求处理',
+          },
         },
         notification: {
           enabled: true,
           sound: true,
-          urgency: "critical",
+          urgency: 'critical',
           customTemplate: {
-            title: "Claude 需要您的注意",
-            message: "Claude 需要您的确认或输入"
-          }
-        }
+            title: 'Claude 需要您的注意',
+            message: 'Claude 需要您的确认或输入',
+          },
+        },
       },
       display: {
-        title: "Claude Code",
-        message: "{{title}}: {{message}}",
+        title: 'Claude Code',
+        message: '{{title}}: {{message}}',
         duration: 8,
-        icon: ""
+        icon: '',
       },
       platformSettings: {
         macos: {
-          subtitle: "Claude Assistant",
-          sound: "Glass",
-          contentImage: "",
-          open: "",
+          subtitle: 'Claude Assistant',
+          sound: 'Glass',
+          contentImage: '',
+          open: '',
           actions: [],
           reply: false,
-          closeLabel: "关闭"
+          closeLabel: '关闭',
         },
         windows: {
-          appID: "ClaudeCode.Notify",
-          toastStyle: "modern",
-          icon: "",
+          appID: 'ClaudeCode.Notify',
+          toastStyle: 'modern',
+          icon: '',
           id: 0,
           remove: 0,
-          install: "start-menu"
+          install: 'start-menu',
         },
         linux: {
-          urgency: "normal",
-          category: "im.received",
-          "app_name": "Claude Code",
+          urgency: 'normal',
+          category: 'im.received',
+          app_name: 'Claude Code',
           timeout: 8,
-          hint: ""
-        }
+          hint: '',
+        },
       },
       quietHours: {
         enabled: false,
-        start: "22:00",
-        end: "08:00",
-        weekdaysOnly: false
+        start: '22:00',
+        end: '08:00',
+        weekdaysOnly: false,
       },
       performance: {
         maxNotificationRetries: 3,
         notificationTimeout: 5000,
-        hookTimeout: 5000
+        hookTimeout: 5000,
       },
       logging: {
         enabled: true,
-        level: "info",
+        level: 'info',
         maxLogSize: 10485760,
-        maxLogFiles: 5
-      }
+        maxLogFiles: 5,
+      },
     };
   }
 
@@ -191,9 +209,11 @@ class ConfigManager {
       }
 
       const eventConfig = config.events[event];
-      if (typeof eventConfig.enabled !== 'boolean' ||
-          typeof eventConfig.sound !== 'boolean' ||
-          !['low', 'normal', 'critical'].includes(eventConfig.urgency)) {
+      if (
+        typeof eventConfig.enabled !== 'boolean' ||
+        typeof eventConfig.sound !== 'boolean' ||
+        !['low', 'normal', 'critical'].includes(eventConfig.urgency)
+      ) {
         return false;
       }
     }
@@ -209,7 +229,8 @@ class ConfigManager {
    */
   saveConfig(config, filePath = null) {
     try {
-      const targetPath = filePath || path.join(this.userConfigDir, 'config.json');
+      const targetPath =
+        filePath || path.join(this.userConfigDir, 'config.json');
 
       // 验证配置
       if (!this.validateConfig(config)) {
@@ -237,14 +258,14 @@ class ConfigManager {
 
       this.logInfo('config_saved', {
         filePath: targetPath,
-        configVersion: config.version
+        configVersion: config.version,
       });
 
       return true;
     } catch (error) {
       this.logError('config_save_failed', {
         error: error.message,
-        filePath: filePath
+        filePath: filePath,
       });
       return false;
     }
@@ -302,7 +323,7 @@ class ConfigManager {
       this.logError('config_set_failed', {
         error: error.message,
         key: key,
-        value: value
+        value: value,
       });
       return config;
     }
@@ -323,12 +344,13 @@ class ConfigManager {
 
     // 处理常用变量
     const commonVars = {
-      sessionId: process.env.HOOK_EVENT_DATA ?
-        JSON.parse(process.env.HOOK_EVENT_DATA || '{}').sessionId : '',
+      sessionId: process.env.HOOK_EVENT_DATA
+        ? JSON.parse(process.env.HOOK_EVENT_DATA || '{}').sessionId
+        : '',
       hookEventName: process.env.HOOK_EVENT_NAME || '',
       timestamp: process.env.HOOK_EVENT_TIMESTAMP || '',
       cwd: process.env.cwd || '',
-      permissionMode: process.env.permissionMode || ''
+      permissionMode: process.env.permissionMode || '',
     };
 
     // 合并变量
@@ -337,7 +359,10 @@ class ConfigManager {
     // 替换模板变量
     for (const [key, value] of Object.entries(allVars)) {
       const placeholder = `{{${key}}}`;
-      result = result.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), value || '');
+      result = result.replace(
+        new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+        value || ''
+      );
     }
 
     // 转义 HTML 特殊字符
@@ -402,7 +427,7 @@ class ConfigManager {
         level: level,
         script: 'config.js',
         message: message,
-        ...data
+        ...data,
       };
 
       // 控制台输出
@@ -454,12 +479,13 @@ class ConfigManager {
       const config = this.loadConfig();
       const maxFiles = config.logging?.maxLogFiles || 5;
 
-      const files = fs.readdirSync(this.logDir)
+      const files = fs
+        .readdirSync(this.logDir)
         .filter(file => file.endsWith('.log'))
         .map(file => ({
           name: file,
           path: path.join(this.logDir, file),
-          time: fs.statSync(path.join(this.logDir, file)).mtime
+          time: fs.statSync(path.join(this.logDir, file)).mtime,
         }))
         .sort((a, b) => b.time - a.time);
 

@@ -15,9 +15,7 @@
   "name": "StartVibe Claude Code Marketplace",
   "description": "Official marketplace for StartVibe Claude Code plugins",
   "version": "1.0.0",
-  "plugins": [
-    "./plugins/notify-plugin"
-  ],
+  "plugins": ["./plugins/notify-plugin"],
   "author": "StartVibe Team",
   "license": "MIT",
   "repository": {
@@ -238,11 +236,11 @@ startvibe-cc-marketplace/
 
 #### 支持的操作系统和工具
 
-| 操作系统 | 通知工具 | 状态 | 要求 |
-|----------|----------|------|------|
-| macOS | osascript | ✅ 内置 | 无需额外安装 |
-| Linux | notify-send | ✅ 需安装 | `sudo apt-get install libnotify-bin` |
-| Windows | PowerShell | ✅ 内置 | 无需额外安装 |
+| 操作系统 | 通知工具    | 状态      | 要求                                 |
+| -------- | ----------- | --------- | ------------------------------------ |
+| macOS    | osascript   | ✅ 内置   | 无需额外安装                         |
+| Linux    | notify-send | ✅ 需安装 | `sudo apt-get install libnotify-bin` |
+| Windows  | PowerShell  | ✅ 内置   | 无需额外安装                         |
 
 #### 平台检测和回退机制
 

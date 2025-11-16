@@ -69,8 +69,8 @@ interface HookEventConfig {
 
 interface HookDefinition {
   type: 'command';
-  command: string;                    // Path to shell script
-  timeout: number;                    // Timeout in seconds
+  command: string; // Path to shell script
+  timeout: number; // Timeout in seconds
 }
 ```
 
@@ -90,11 +90,11 @@ interface PlatformNotification {
   icon?: string;
 
   // Optional platform features
-  subtitle?: string;                  // macOS only
-  actions?: string[];                 // macOS only
-  appID?: string;                     // Windows only
-  category?: string;                  // Linux only
-  hint?: string;                      // Linux only (JSON format)
+  subtitle?: string; // macOS only
+  actions?: string[]; // macOS only
+  appID?: string; // Windows only
+  category?: string; // Linux only
+  hint?: string; // Linux only (JSON format)
 }
 ```
 
@@ -503,18 +503,18 @@ interface TemplateVariables {
 
 ### Supported Variables
 
-| Variable | Type | Description | Example |
-|----------|------|-------------|---------|
-| `{{title}}` | string | Event title | "Claude Response Complete" |
-| `{{message}}` | string | Event message | "Task processing completed" |
-| `{{sessionId}}` | string | Session identifier | "session-12345" |
-| `{{eventType}}` | string | Event type | "stop", "notification" |
-| `{{hookEventName}}` | string | Hook event name | "stop" |
-| `{{transcriptPath}}` | string | Transcript file path | "/tmp/transcript.txt" |
-| `{{cwd}}` | string | Working directory | "/Users/user/project" |
-| `{{permissionMode}}` | string | Permission mode | "default" |
-| `{{timestamp}}` | number | Unix timestamp | 1705123456789 |
-| `{{duration}}` | number | Event duration in seconds | 15 |
+| Variable             | Type   | Description               | Example                     |
+| -------------------- | ------ | ------------------------- | --------------------------- |
+| `{{title}}`          | string | Event title               | "Claude Response Complete"  |
+| `{{message}}`        | string | Event message             | "Task processing completed" |
+| `{{sessionId}}`      | string | Session identifier        | "session-12345"             |
+| `{{eventType}}`      | string | Event type                | "stop", "notification"      |
+| `{{hookEventName}}`  | string | Hook event name           | "stop"                      |
+| `{{transcriptPath}}` | string | Transcript file path      | "/tmp/transcript.txt"       |
+| `{{cwd}}`            | string | Working directory         | "/Users/user/project"       |
+| `{{permissionMode}}` | string | Permission mode           | "default"                   |
+| `{{timestamp}}`      | number | Unix timestamp            | 1705123456789               |
+| `{{duration}}`       | number | Event duration in seconds | 15                          |
 
 ## Shell Script Data Flow
 
@@ -538,11 +538,11 @@ CWD="/Users/user/project"
 
 ```typescript
 interface CommandExecution {
-  command: string;                    // Shell script path
-  args: string[];                     // Command arguments
-  env: Record<string, string>;        // Environment variables
-  timeout: number;                    // Execution timeout
-  workingDirectory: string;           // Script execution directory
+  command: string; // Shell script path
+  args: string[]; // Command arguments
+  env: Record<string, string>; // Environment variables
+  timeout: number; // Execution timeout
+  workingDirectory: string; // Script execution directory
 }
 
 interface ExecutionResult {
@@ -568,13 +568,13 @@ interface PlatformInfo {
   // Platform capabilities
   notifications: {
     supported: boolean;
-    nativeTools: string[];           // Available notification tools
-    fallbackMethods: string[];       // Fallback notification methods
+    nativeTools: string[]; // Available notification tools
+    fallbackMethods: string[]; // Fallback notification methods
   };
 
   // Script compatibility
-  shellPath: string;                 // Path to shell interpreter
-  scriptExtensions: string[];        // Supported script extensions
+  shellPath: string; // Path to shell interpreter
+  scriptExtensions: string[]; // Supported script extensions
 }
 ```
 
@@ -601,7 +601,7 @@ enum ErrorSeverity {
   LOW = 'low',
   MEDIUM = 'medium',
   HIGH = 'high',
-  CRITICAL = 'critical'
+  CRITICAL = 'critical',
 }
 
 enum ErrorCategory {
@@ -609,7 +609,7 @@ enum ErrorCategory {
   CONFIGURATION = 'configuration',
   EXECUTION = 'execution',
   PERMISSION = 'permission',
-  SYSTEM = 'system'
+  SYSTEM = 'system',
 }
 
 interface PluginError {
@@ -680,7 +680,7 @@ interface NotificationMetrics {
   platform: string;
   success: boolean;
   duration: number;
-  method: string;                    // "osascript", "notify-send", "powershell"
+  method: string; // "osascript", "notify-send", "powershell"
   error?: string;
 }
 

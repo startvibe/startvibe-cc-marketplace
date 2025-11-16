@@ -7,16 +7,19 @@
 ## 系统要求
 
 ### 最低要求
+
 - **操作系统**: macOS 10.12+, Windows 8+, 或 Ubuntu 16.04+
 - **Claude Code**: 版本 1.0.0 或更高
 - **Shell 环境**: Bash 4.0+, PowerShell 5.0+, 或等效环境
 
 ### 平台通知工具要求
+
 - **macOS**: osascript (系统内置，无需安装)
 - **Windows**: PowerShell (系统内置，无需安装)
 - **Linux**: notify-send (需安装: `sudo apt-get install libnotify-bin`)
 
 ### 推荐配置
+
 - **内存**: 至少 2GB 可用内存
 - **存储**: 10MB 可用磁盘空间
 - **权限**: 脚本执行权限
@@ -26,12 +29,14 @@
 ### 方法一：Claude Code Marketplace 安装（推荐）
 
 1. **打开 Claude Code**
+
    ```bash
    # 在 Claude Code 中运行市场安装命令
    /marketplace install notify-plugin
    ```
 
 2. **验证安装**
+
    ```bash
    # 检查插件是否已安装
    /marketplace list
@@ -46,6 +51,7 @@
 ### 方法二：手动安装（推荐）
 
 1. **克隆项目**
+
    ```bash
    # 克隆到 Claude Code 插件目录
    cd ~/.claude
@@ -53,12 +59,14 @@
    ```
 
 2. **验证插件结构**
+
    ```bash
    # 检查插件文件结构（注意：插件没有独立的package.json）
    ls -la plugins/notify-plugin/
    ```
 
 3. **设置执行权限**
+
    ```bash
    # 确保脚本文件有执行权限
    chmod +x plugins/notify-plugin/scripts/*.sh
@@ -89,6 +97,7 @@ echo "Test" | claude-code
 ### 手动配置
 
 1. **创建配置目录**
+
    ```bash
    mkdir -p ~/.claude-code/notify-plugin
    ```
@@ -124,6 +133,7 @@ echo "Test" | claude-code
 ### 功能测试
 
 1. **测试 Stop 事件通知**
+
    ```bash
    # 发送简单请求给 Claude，等待完成
    claude-code "Hello, please respond with 'Test complete'"
@@ -159,6 +169,7 @@ tail -f ~/.claude-code/notify-plugin/logs/notifications.log
    - 确保 Claude Code 有通知权限
 
 2. **测试原生通知功能**
+
    ```bash
    # 测试 osascript 通知
    osascript -e 'display notification "测试通知" with title "Claude Code"'
@@ -179,6 +190,7 @@ tail -f ~/.claude-code/notify-plugin/logs/notifications.log
 ### Windows 优化
 
 1. **检查 PowerShell 执行策略**
+
    ```powershell
    # 检查当前执行策略
    Get-ExecutionPolicy
@@ -205,6 +217,7 @@ tail -f ~/.claude-code/notify-plugin/logs/notifications.log
 ### Linux 优化
 
 1. **安装通知工具（必需）**
+
    ```bash
    # Ubuntu/Debian
    sudo apt-get install libnotify-bin
@@ -217,6 +230,7 @@ tail -f ~/.claude-code/notify-plugin/logs/notifications.log
    ```
 
 2. **检查桌面环境通知设置**
+
    ```bash
    # 测试 notify-send
    notify-send --urgency=normal "测试" "这是一个测试通知"
@@ -246,12 +260,12 @@ tail -f ~/.claude-code/notify-plugin/logs/notifications.log
 {
   "events": {
     "stop": {
-      "enabled": true,     // 启用响应完成通知
-      "sound": false,      // 禁用声音
-      "urgency": "low"     // 设置低紧急程度
+      "enabled": true, // 启用响应完成通知
+      "sound": false, // 禁用声音
+      "urgency": "low" // 设置低紧急程度
     },
     "notification": {
-      "enabled": false     // 禁用权限请求通知
+      "enabled": false // 禁用权限请求通知
     }
   }
 }
@@ -295,11 +309,13 @@ tail -f ~/.claude-code/notify-plugin/logs/notifications.log
 ### 通知不显示
 
 1. **检查插件状态**
+
    ```bash
    /marketplace status notify-plugin
    ```
 
 2. **验证配置文件**
+
    ```bash
    # 验证 JSON 格式
    cat ~/.claude-code/notify-plugin/config.json | python3 -m json.tool
@@ -318,12 +334,14 @@ tail -f ~/.claude-code/notify-plugin/logs/notifications.log
 ### 性能问题
 
 1. **检查通知延迟**
+
    ```bash
    # 运行性能测试
    time /marketplace test notify-plugin
    ```
 
 2. **重置配置**
+
    ```bash
    # 备份当前配置
    cp ~/.claude-code/notify-plugin/config.json ~/.claude-code/notify-plugin/config.json.backup
@@ -335,6 +353,7 @@ tail -f ~/.claude-code/notify-plugin/logs/notifications.log
 ### 平台特定问题
 
 #### macOS
+
 ```bash
 # 测试原生 osascript 通知
 osascript -e 'display notification "测试通知" with title "Claude Code 测试"'
@@ -344,6 +363,7 @@ osascript -e 'display notification "权限检查" with title "通知权限正常
 ```
 
 #### Windows
+
 ```powershell
 # 测试原生 PowerShell 通知
 Add-Type -AssemblyName System.Windows.Forms
@@ -355,6 +375,7 @@ $notification.ShowBalloonTip(3000)
 ```
 
 #### Linux
+
 ```bash
 # 测试原生 notify-send
 notify-send --urgency=normal "Claude Code 测试" "测试通知"

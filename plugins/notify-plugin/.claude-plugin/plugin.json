@@ -5,13 +5,7 @@
   "description": "Cross-platform system notifications for Claude Code events using native platform tools",
   "author": "StartVibe Team",
   "license": "MIT",
-  "keywords": [
-    "notification",
-    "system",
-    "utility",
-    "cross-platform",
-    "native"
-  ],
+  "keywords": ["notification", "system", "utility", "cross-platform", "native"],
   "engines": {
     "claude-code": ">=1.0.0"
   },

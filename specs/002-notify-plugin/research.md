@@ -9,6 +9,7 @@ Based on comprehensive analysis of Claude Code official documentation and existi
 ### 1. **Plugin Structure Requirements**
 
 **Decision**: Plugin must be located within marketplace structure, not as standalone project
+
 - **Location**: `plugins/notify-plugin/` instead of `notify-plugin/`
 - **Rationale**: Claude Code marketplace plugins follow specific directory structure for proper integration
 - **Alternatives considered**: Standalone plugin structure (rejected due to marketplace integration requirements)
@@ -16,6 +17,7 @@ Based on comprehensive analysis of Claude Code official documentation and existi
 ### 2. **Hook Implementation Approach**
 
 **Decision**: Use command-based hooks with shell scripts instead of JavaScript classes
+
 - **Method**: hooks/hooks.json with command type hooks calling shell scripts
 - **Rationale**: Aligns with Claude Code official hook architecture and provides better cross-platform compatibility
 - **Alternatives considered**: JavaScript-based hook handlers (rejected due to complexity and maintenance overhead)
@@ -23,6 +25,7 @@ Based on comprehensive analysis of Claude Code official documentation and existi
 ### 3. **Cross-Platform Notification Strategy**
 
 **Decision**: Use native platform notification tools via shell scripts
+
 - **macOS**: osascript with display notification
 - **Linux**: notify-send with zenity fallback
 - **Windows**: PowerShell MessageBox commands
@@ -32,6 +35,7 @@ Based on comprehensive analysis of Claude Code official documentation and existi
 ### 4. **Marketplace Integration**
 
 **Decision**: Follow StartVibe marketplace structure with proper plugin referencing
+
 - **Configuration**: Update marketplace.json to reference `./plugins/notify-plugin`
 - **Rationale**: Ensures proper plugin discovery and installation within marketplace
 - **Alternatives considered**: Separate marketplace (rejected due to complexity)
@@ -39,17 +43,20 @@ Based on comprehensive analysis of Claude Code official documentation and existi
 ## Technical Decisions
 
 ### Plugin Architecture
+
 - **Structure**: Standard Claude Code plugin with hooks integration
 - **Dependencies**: Native platform tools only (no npm packages)
 - **Configuration**: JSON-based with shell script execution
 - **Testing**: Marketplace integration testing with cross-platform validation
 
 ### Hook Configuration
+
 - **Stop Event**: Command-based hook with 15s timeout, normal urgency
 - **Notification Event**: Command-based hook with 30s timeout, critical urgency
 - **Error Handling**: Graceful fallback to console output when notifications fail
 
 ### Cross-Platform Implementation
+
 - **Detection**: Shell script for platform identification
 - **Notification Handlers**: Platform-specific shell scripts
 - **Fallback Mechanisms**: Alternative notification methods per platform
@@ -57,6 +64,7 @@ Based on comprehensive analysis of Claude Code official documentation and existi
 ## Implementation Requirements
 
 ### Directory Structure
+
 ```
 startvibe-cc-marketplace/
 ├── .claude-plugin/
@@ -81,6 +89,7 @@ startvibe-cc-marketplace/
 ```
 
 ### Hook Configuration Format
+
 ```json
 {
   "description": "Cross-platform system notifications for Claude Code events",
@@ -114,6 +123,7 @@ startvibe-cc-marketplace/
 ## Compliance Assessment
 
 ### Constitution Compliance ✅
+
 - **市场标准合规性**: Follows standard plugin structure and marketplace integration
 - **插件架构卓越性**: Modular, single-purpose with minimal dependencies
 - **MCP 集成策略**: Not required for notification functionality
@@ -126,11 +136,13 @@ startvibe-cc-marketplace/
 ## Risk Mitigation
 
 ### Technical Risks
+
 - **Platform Compatibility**: Implemented with detection and fallback mechanisms
 - **Hook Execution Failures**: Timeout handling and error logging
 - **Security Concerns**: Input validation and safe command execution
 
 ### Implementation Risks
+
 - **Marketplace Integration**: Verified structure compatibility with official documentation
 - **User Adoption**: Simple configuration with clear documentation
 - **Maintenance**: Minimal dependencies reduce maintenance burden

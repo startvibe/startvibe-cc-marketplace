@@ -65,6 +65,7 @@ log_debug() {
 **签名**: `detect_platform() -> string`
 
 **返回值**:
+
 - `"macos"` - macOS 平台
 - `"windows"` - Windows 平台
 - `"linux"` - Linux 平台
@@ -99,6 +100,7 @@ detect_platform() {
 **签名**: `check_platform_support(platform) -> boolean`
 
 **参数**:
+
 - `platform`: 来自 detect_platform() 的平台标识符
 
 **返回值**: 支持则返回退出码 0，不支持则返回 1
@@ -126,6 +128,7 @@ check_platform_support() {
 **签名**: `send_native_notification(title, message, urgency) -> boolean`
 
 **参数**:
+
 - `title`: 通知标题
 - `message`: 通知内容
 - `urgency`: 紧急程度 (`low`|`normal`|`critical`)
@@ -182,6 +185,7 @@ send_native_notification() {
 **签名**: `check_native_tools(platform) -> boolean`
 
 **参数**:
+
 - `platform`: 平台标识符
 
 **返回值**: 工具可用返回 0，不可用返回 1
@@ -256,6 +260,7 @@ load_config() {
 **Signature**: `get_config_value(config, key) -> string`
 
 **Parameters**:
+
 - `config`: JSON configuration string
 - `key`: JSON path to value (e.g., "events.stop.enabled")
 
@@ -283,6 +288,7 @@ get_config_value() {
 **Signature**: `validate_config(config) -> boolean`
 
 **Parameters**:
+
 - `config`: JSON configuration string
 
 **Returns**: Exit code 0 if valid, 1 if invalid
@@ -324,6 +330,7 @@ validate_config() {
 **Signature**: `process_template(template, variables) -> string`
 
 **Parameters**:
+
 - `template`: Template string with {{variables}}
 - `variables`: JSON object with variable values
 
@@ -363,6 +370,7 @@ process_template() {
 **Signature**: `validate_template(template) -> boolean`
 
 **Parameters**:
+
 - `template`: Template string to validate
 
 **Returns**: Exit code 0 if valid, 1 if invalid
@@ -396,6 +404,7 @@ validate_template() {
 **Signature**: `send_notification(title, message, urgency, sound?) -> exit_code`
 
 **Parameters**:
+
 - `title`: Notification title
 - `message`: Notification message
 - `urgency`: "low", "normal", or "critical"
@@ -742,8 +751,8 @@ main "$@"
 - `3`: Platform not supported
 - `4`: Permission denied
 - `5`: Invalid input
-- `6**: Timeout exceeded
-- `7**: Required dependency missing
+- `6\*\*: Timeout exceeded
+- `7\*\*: Required dependency missing
 
 ### Error Output Format
 

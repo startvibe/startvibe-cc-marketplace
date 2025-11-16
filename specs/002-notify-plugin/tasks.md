@@ -17,13 +17,13 @@ description: 'Task list for notify plugin implementation'
 
 **目的**: 插件初始化和基础环境配置
 
-- [X] T001 创建 notify-plugin 市场目录结构 `plugins/notify-plugin/`
-- [X] T002 创建插件元数据 `plugins/notify-plugin/.claude-plugin/plugin.json`
-- [X] T003 创建 hooks 配置 `plugins/notify-plugin/hooks/hooks.json`
-- [X] T004 [P] 实现原生通知封装脚本 `plugins/notify-plugin/scripts/native-notifier.sh`
-- [X] T005 [P] 实现平台检测脚本 `plugins/notify-plugin/scripts/platform-check.sh`
-- [X] T006 [P] 创建默认配置文件 `plugins/notify-plugin/config/default-config.json`
-- [X] T007 [P] 创建配置管理模块 `plugins/notify-plugin/src/config.js`
+- [x] T001 创建 notify-plugin 市场目录结构 `plugins/notify-plugin/`
+- [x] T002 创建插件元数据 `plugins/notify-plugin/.claude-plugin/plugin.json`
+- [x] T003 创建 hooks 配置 `plugins/notify-plugin/hooks/hooks.json`
+- [x] T004 [P] 实现原生通知封装脚本 `plugins/notify-plugin/scripts/native-notifier.sh`
+- [x] T005 [P] 实现平台检测脚本 `plugins/notify-plugin/scripts/platform-check.sh`
+- [x] T006 [P] 创建默认配置文件 `plugins/notify-plugin/config/default-config.json`
+- [x] T007 [P] 创建配置管理模块 `plugins/notify-plugin/src/config.js`
 - [ ] T008 [P] 配置开发环境（ESLint + Prettier + 测试框架）
 - [ ] T008a [P] 设置 Shell 脚本测试框架（Bats Core 或类似工具）
 - [ ] T008b [P] 创建单元测试套件验证核心函数功能
@@ -31,8 +31,8 @@ description: 'Task list for notify plugin implementation'
 - [ ] T008d [P] 添加性能基准测试确保 Hook 响应时间要求
 - [ ] T009 [P] 设置 ESLint 配置 `plugins/notify-plugin/.eslintrc.js`
 - [ ] T010 [P] 设置 Prettier 配置 `plugins/notify-plugin/.prettierrc`
-- [X] T011 [P] 实现原生 Stop 事件处理器 `plugins/notify-plugin/scripts/stop-handler.sh`
-- [X] T012 [P] 实现原生 Notification 事件处理器 `plugins/notify-plugin/scripts/notification-handler.sh`
+- [x] T011 [P] 实现原生 Stop 事件处理器 `plugins/notify-plugin/scripts/stop-handler.sh`
+- [x] T012 [P] 实现原生 Notification 事件处理器 `plugins/notify-plugin/scripts/notification-handler.sh`
 - [ ] T013 [P] 配置 Husky Git hooks 用于插件质量检查
 
 ---
@@ -43,7 +43,7 @@ description: 'Task list for notify plugin implementation'
 
 **⚠️ 关键**: 在此阶段完成之前不能开始功能工作
 
-- [X] T014 创建主入口文件 `plugins/notify-plugin/src/index.js`
+- [x] T014 创建主入口文件 `plugins/notify-plugin/src/index.js`
 - [ ] T015 [P] 完善配置管理模块 `plugins/notify-plugin/src/config.js`（基于 T007 创建的文件）
 - [ ] T016 [P] 实现错误处理和日志记录基础设施
 - [ ] T017 [P] 设置性能监控（Hook 响应 < 5秒，通知发送 < 200ms）

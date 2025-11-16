@@ -14,17 +14,18 @@
 ## 🏗️ 系统架构
 
 ### 技术栈
+
 - **主要语言**: Shell 脚本（实现核心功能）
 - **配置管理**: 轻量级 JavaScript（JSON 配置处理）
 - **通知工具**: 原生平台通知工具
 
 ### 支持平台和工具
 
-| 操作系统 | 通知工具 | 状态 | 要求 |
-|----------|----------|------|------|
-| macOS | osascript | ✅ 内置 | 无需额外安装 |
-| Linux | notify-send | ✅ 需安装 | `sudo apt-get install libnotify-bin` |
-| Windows | PowerShell | ✅ 内置 | 无需额外安装 |
+| 操作系统 | 通知工具    | 状态      | 要求                                 |
+| -------- | ----------- | --------- | ------------------------------------ |
+| macOS    | osascript   | ✅ 内置   | 无需额外安装                         |
+| Linux    | notify-send | ✅ 需安装 | `sudo apt-get install libnotify-bin` |
+| Windows  | PowerShell  | ✅ 内置   | 无需额外安装                         |
 
 ## 📦 安装说明
 
@@ -144,6 +145,7 @@ HOOK_EVENT_NAME=Notification ./plugins/notify-plugin/scripts/notification-handle
 ### 平台特定设置
 
 #### macOS 配置
+
 ```json
 {
   "platformSettings": {
@@ -159,6 +161,7 @@ HOOK_EVENT_NAME=Notification ./plugins/notify-plugin/scripts/notification-handle
 ```
 
 #### Windows 配置
+
 ```json
 {
   "platformSettings": {
@@ -173,6 +176,7 @@ HOOK_EVENT_NAME=Notification ./plugins/notify-plugin/scripts/notification-handle
 ```
 
 #### Linux 配置
+
 ```json
 {
   "platformSettings": {
@@ -231,6 +235,7 @@ HOOK_EVENT_NAME=Notification ./plugins/notify-plugin/scripts/notification-handle
 ### 功能验证
 
 1. **Stop 事件测试**
+
    ```bash
    # 触发 Claude 完成响应
    claude-code "请回复'测试完成'"
@@ -238,6 +243,7 @@ HOOK_EVENT_NAME=Notification ./plugins/notify-plugin/scripts/notification-handle
    ```
 
 2. **Notification 事件测试**
+
    ```bash
    # 触发需要权限的操作
    claude-code "请访问一个需要权限的文件"
@@ -256,11 +262,13 @@ HOOK_EVENT_NAME=Notification ./plugins/notify-plugin/scripts/notification-handle
 #### 通知不显示
 
 1. **检查插件状态**
+
    ```bash
    /marketplace status notify-plugin
    ```
 
 2. **验证配置文件**
+
    ```bash
    cat ~/.claude-code/notify-plugin/config.json | python3 -m json.tool
    ```
@@ -289,6 +297,7 @@ rm ~/.claude-code/notify-plugin/config.json
 #### 平台特定问题
 
 **macOS**
+
 ```bash
 # 测试原生 osascript 通知
 osascript -e 'display notification "测试通知" with title "Claude Code"'
@@ -298,6 +307,7 @@ osascript -e 'display notification "权限检查" with title "通知权限正常
 ```
 
 **Windows**
+
 ```powershell
 # 测试 PowerShell 通知
 Add-Type -AssemblyName System.Windows.Forms
@@ -309,6 +319,7 @@ $notification.ShowBalloonTip(3000)
 ```
 
 **Linux**
+
 ```bash
 # 测试 notify-send
 notify-send --urgency=normal "Claude Code 测试" "测试通知"
@@ -363,7 +374,7 @@ await plugin.initialize();
 await plugin.sendNotification('标题', '消息', {
   urgency: 'normal',
   sound: true,
-  eventType: 'stop'
+  eventType: 'stop',
 });
 
 // 获取状态

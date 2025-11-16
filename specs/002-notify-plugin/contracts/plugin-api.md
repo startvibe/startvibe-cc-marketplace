@@ -151,9 +151,7 @@
   "name": "StartVibe Claude Code Marketplace",
   "description": "Official marketplace for StartVibe Claude Code plugins",
   "version": "1.0.0",
-  "plugins": [
-    "./plugins/notify-plugin"
-  ],
+  "plugins": ["./plugins/notify-plugin"],
   "author": "StartVibe Team",
   "license": "MIT",
   "repository": {
@@ -268,15 +266,15 @@ send_linux_notification(title, message, urgency, sound?) -> exit_code
 
 ### Available Variables
 
-| Variable | Type | Source | Availability |
-|----------|------|--------|--------------|
-| `{{title}}` | string | Event template | All events |
-| `{{message}}` | string | Event template | All events |
-| `{{sessionId}}` | string | Hook environment | Stop event |
-| `{{hookEventName}}` | string | Hook environment | All events |
-| `{{timestamp}}` | number | Hook environment | All events |
-| `{{cwd}}` | string | Hook environment | All events |
-| `{{permissionMode}}` | string | Hook environment | All events |
+| Variable             | Type   | Source           | Availability |
+| -------------------- | ------ | ---------------- | ------------ |
+| `{{title}}`          | string | Event template   | All events   |
+| `{{message}}`        | string | Event template   | All events   |
+| `{{sessionId}}`      | string | Hook environment | Stop event   |
+| `{{hookEventName}}`  | string | Hook environment | All events   |
+| `{{timestamp}}`      | number | Hook environment | All events   |
+| `{{cwd}}`            | string | Hook environment | All events   |
+| `{{permissionMode}}` | string | Hook environment | All events   |
 
 ### Template Processing Contract
 

@@ -13,16 +13,17 @@
 
 **语言/版本**: Shell 脚本（主要）+ 轻量级 JavaScript（配置管理）
 **主要依赖**: 原生平台通知工具（无外部依赖）
-  - macOS: osascript (系统内置)
-  - Linux: notify-send (libnotify-bin)
-  - Windows: PowerShell (系统内置)
-**存储**: 插件结构内的 JSON 配置文件
-**测试**: 市场集成测试 + 跨平台验证 + 原生工具测试
-**目标平台**: Claude Code 市场（跨平台插件）
-**项目类型**: Claude Code 插件与 hooks 集成
-**性能目标**: Hook 响应时间 < 1 秒，通知发送 < 200ms
-**约束**: 零外部依赖，使用系统原生通知工具；真正即装即用
-**规模/范围**: 专注于系统通知的单一市场插件
+
+- macOS: osascript (系统内置)
+- Linux: notify-send (libnotify-bin)
+- Windows: PowerShell (系统内置)
+  **存储**: 插件结构内的 JSON 配置文件
+  **测试**: 市场集成测试 + 跨平台验证 + 原生工具测试
+  **目标平台**: Claude Code 市场（跨平台插件）
+  **项目类型**: Claude Code 插件与 hooks 集成
+  **性能目标**: Hook 响应时间 < 1 秒，通知发送 < 200ms
+  **约束**: 零外部依赖，使用系统原生通知工具；真正即装即用
+  **规模/范围**: 专注于系统通知的单一市场插件
 
 ## Constitution Check
 
