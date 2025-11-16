@@ -40,6 +40,7 @@
 - [ ] **测试与质量**: 为核心功能定义自动化测试覆盖策略
 - [ ] **安全要求**: 设计输入验证、安全凭证管理和隐私保护
 - [ ] **性能标准**: 计划初始化时间 < 2 秒，命令响应时间 < 5 秒
+- [ ] **开发工具规范**: 配置 ESLint+Prettier 代码规范，Husky Git hooks，pnpm 包管理器
 
 ## Project Structure
 
@@ -83,6 +84,13 @@ plugin-name/
 ├── docs/                        # 附加文档 (可选)
 │   ├── zh-CN/                   # 中文文档 (推荐)
 │   └── en/                      # 英文文档 (可选)
+├── .eslintrc.js                 # ESLint 配置 (必需)
+├── .prettierrc                  # Prettier 配置 (必需)
+├── package.json                 # 项目配置和依赖 (必需)
+├── pnpm-lock.yaml              # pnpm 锁定文件 (必需)
+├── .husky/                      # Husky Git hooks (必需)
+│   ├── pre-commit              # 提交前检查
+│   └── pre-push                # 推送前检查
 └── README.md                    # 插件文档 (必需，优先中文)
 
 # 选项 2: 带 MCP 服务器集成的插件
@@ -91,13 +99,20 @@ plugin-name/
 │   └── plugin.json              # 包含 MCP 服务器配置
 ├── mcp-server/                  # MCP 服务器实现
 │   ├── src/
-│   ├── package.json
+│   ├── package.json             # MCP 服务器包配置
+│   ├── .eslintrc.js            # ESLint 配置
+│   ├── .prettierrc             # Prettier 配置
 │   └── README.md
 ├── commands/
 ├── agents/
 ├── tests/
 ├── docs/
 │   └── zh-CN/                   # 中文文档
+├── .eslintrc.js                 # 根 ESLint 配置
+├── .prettierrc                  # 根 Prettier 配置
+├── package.json                 # 根包配置
+├── pnpm-workspace.yaml         # pnpm 工作空间配置
+├── .husky/                      # Git hooks
 └── README.md                    # 优先中文
 
 # 选项 3: 多技能插件套件
@@ -107,15 +122,29 @@ plugin-suite/
 ├── skill-1/
 │   ├── .claude-plugin/
 │   │   └── plugin.json
+│   ├── package.json
+│   ├── .eslintrc.js
+│   ├── .prettierrc
 │   └── [技能结构]
 ├── skill-2/
 │   ├── .claude-plugin/
 │   │   └── plugin.json
+│   ├── package.json
+│   ├── .eslintrc.js
+│   ├── .prettierrc
 │   └── [技能结构]
 ├── shared/                      # 共享工具
+│   ├── package.json
+│   ├── .eslintrc.js
+│   └── .prettierrc
 ├── tests/
 ├── docs/
 │   └── zh-CN/                   # 中文文档目录
+├── package.json                 # 根包配置
+├── pnpm-workspace.yaml         # 工作空间配置
+├── .eslintrc.js                 # 根 ESLint 配置
+├── .prettierrc                  # 根 Prettier 配置
+├── .husky/                      # Git hooks
 └── README.md                    # 套件文档 (中文优先)
 ```
 

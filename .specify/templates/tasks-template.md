@@ -50,9 +50,13 @@ description: "Task list template for feature implementation"
 
 - [ ] T001 按照 Claude Code 市场标准创建插件目录结构
 - [ ] T002 创建包含所需元数据的 `.claude-plugin/plugin.json`
-- [ ] T003 [P] 配置开发环境（代码检查、格式化、测试）
-- [ ] T004 设置测试框架（单元测试、集成测试、契约测试）
-- [ ] T005 [P] 配置插件验证的 CI/CD 管道
+- [ ] T003 [P] 配置开发环境（ESLint + Prettier + 测试框架）
+- [ ] T004 [P] 初始化 pnpm 项目并配置 package.json
+- [ ] T005 [P] 设置 ESLint 配置文件和规则
+- [ ] T006 [P] 设置 Prettier 配置文件和格式化规则
+- [ ] T007 [P] 配置 Husky Git hooks（pre-commit, pre-push）
+- [ ] T008 设置测试框架（单元测试、集成测试、契约测试）
+- [ ] T009 [P] 配置插件验证的 CI/CD 管道
 
 ---
 
@@ -161,6 +165,8 @@ description: "Task list template for feature implementation"
 - [ ] TXXX 验证市场合规性和标准遵守情况
 - [ ] TXXX 性能分析和内存使用验证（< 100MB）
 - [ ] TXXX [P] 文档更新和 API 参考完成（中文优先）
+- [ ] TXXX [P] 验证 ESLint + Prettier + Husky 配置正常工作
+- [ ] TXXX [P] 确保所有代码通过质量检查和格式化验证
 
 ---
 

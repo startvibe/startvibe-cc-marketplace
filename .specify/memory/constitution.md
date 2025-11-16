@@ -1,8 +1,8 @@
 <!-- Sync Impact Report:
-- Version change: 1.0.0 → 1.0.1 (language preference addition)
-- Modified principles: Added language preference principle for Chinese-first communication
+- Version change: 1.0.1 → 1.0.2 (development tools specification)
+- Modified principles: Enhanced development standards with specific tool requirements
 - Templates requiring updates: ⚠ plan-template.md, ⚠ spec-template.md, ⚠ tasks-template.md
-- Follow-up TODOs: Update templates to reflect Chinese documentation preference
+- Follow-up TODOs: Update templates to reflect ESLint+Prettier+Husky+pnpm requirements
 -->
 
 # StartVibe Claude Code 插件市场章程
@@ -28,6 +28,12 @@
 
 ### 代码质量要求
 所有插件代码必须遵循特定语言的最佳实践，并包括适当的错误处理、日志记录和资源管理。插件不得干扰 Claude Code 的核心功能或其他插件。静态分析和安全扫描必须集成到开发工作流程中。
+
+**强制工具要求:**
+- **ESLint + Prettier**: 必须配置并使用 ESLint 和 Prettier 进行代码格式化和质量检查，确保代码风格一致性
+- **Husky**: 必须使用 Husky 配置 Git hooks，在提交前自动运行代码检查和测试
+- **pnpm**: 必须使用 pnpm 作为包管理器，确保依赖管理的高效性和安全性
+- 所有配置文件（`.eslintrc`, `.prettierrc`, `package.json`）必须包含在插件仓库中
 
 ### 版本管理
 插件必须遵循语义化版本控制（MAJOR.MINOR.PATCH），并在主版本内保持向后兼容性。所有破坏性更改必须通过适当的版本增量清晰记录和传达。原因：实现可预测的插件更新并防止干扰用户工作流程。
@@ -57,4 +63,4 @@
 ### 市场管理
 市场维护符合章程要求的精选插件集合。插件提交需要代码审查、安全评估和文档验证。所有市场决策优先考虑用户体验、生态系统健康和长期可持续性。
 
-**版本**: 1.0.1 | **制定日期**: 2025-11-16 | **最后修订**: 2025-11-16
+**版本**: 1.0.2 | **制定日期**: 2025-11-16 | **最后修订**: 2025-11-16
