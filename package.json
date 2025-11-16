@@ -1,0 +1,48 @@
+{
+  "name": "startvibe-cc-marketplace",
+  "version": "1.0.0",
+  "description": "StartVibe Claude Code 插件市场配置项目",
+  "main": "index.js",
+  "scripts": {
+    "prepare": "husky install",
+    "lint": "eslint . --ext .js,.ts,.jsx,.tsx",
+    "lint:fix": "eslint . --ext .js,.ts,.jsx,.tsx --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "echo \"No tests yet\"",
+    "validate": "npm run lint && npm run format:check",
+    "dev-setup": "npm install && npm run prepare",
+    "ci:install": "pnpm install --frozen-lockfile",
+    "ci:lint": "npm run lint",
+    "ci:format": "npm run format:check",
+    "ci:test": "npm test",
+    "ci:validate": "npm run ci:lint && npm run ci:format"
+  },
+  "keywords": [
+    "claude-code",
+    "plugin",
+    "marketplace",
+    "development",
+    "configuration"
+  ],
+  "author": {
+    "name": "StartVibe Team",
+    "email": "dev@startvibe.com"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^14.0.1",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0"
+}

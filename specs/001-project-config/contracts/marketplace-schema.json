@@ -1,0 +1,182 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Claude Code Marketplace Configuration",
+  "description": "Claude Code 市场配置文件 schema",
+  "type": "object",
+  "required": ["name", "owner", "plugins"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "市场唯一名称"
+    },
+    "owner": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string",
+              "format": "email"
+            },
+            "url": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        }
+      ],
+      "description": "市场所有者信息（用户名或组织名或详细对象）"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "市场描述，建议使用中文"
+    },
+    "plugins": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/pluginEntry"
+      }
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+.*$",
+      "description": "市场配置版本号"
+    },
+    "homepage": {
+      "type": "string",
+      "format": "uri",
+      "description": "市场主页 URL"
+    },
+    "repository": {
+      "$ref": "#/definitions/repository"
+    },
+    "maintainers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/maintainer"
+      }
+    },
+    "lastUpdated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "最后更新时间 (ISO 8601 格式)"
+    }
+  },
+  "definitions": {
+    "pluginEntry": {
+      "type": "object",
+      "required": ["name", "source"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "插件名称"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+.*$",
+          "description": "插件特定版本（可选）"
+        },
+        "source": {
+          "type": "string",
+          "description": "插件源地址，可以是相对路径、Git URL 或包名"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "插件简短描述"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "插件标签分类"
+        },
+        "verified": {
+          "type": "boolean",
+          "default": false,
+          "description": "是否已验证插件"
+        },
+        "lastUpdated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "插件最后更新时间"
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "category": {
+              "type": "string",
+              "enum": [
+                "development",
+                "productivity",
+                "ai",
+                "utilities",
+                "integration",
+                "documentation"
+              ]
+            },
+            "size": {
+              "type": "string",
+              "pattern": "^\\d+[KMGT]?B$",
+              "description": "插件包大小"
+            },
+            "downloads": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "下载次数"
+            },
+            "rating": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 5,
+              "description": "插件评分 (0-5)"
+            }
+          }
+        }
+      }
+    },
+    "repository": {
+      "type": "object",
+      "required": ["type", "url"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["git"]
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "maintainer": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    }
+  }
+}

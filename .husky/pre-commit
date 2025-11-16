@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+. "$(dirname "$0")/_/husky.sh"
+
+# 运行代码检查
+echo "🔍 Running code quality checks..."
+
+# 运行 ESLint
+echo "Running ESLint..."
+npm run lint
+
+# 运行格式化检查
+echo "Checking code formatting..."
+npm run format:check
+
+echo "✅ Pre-commit checks passed!"

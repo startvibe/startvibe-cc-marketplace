@@ -1,0 +1,171 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ESLint Configuration Schema",
+  "description": "ESLint 配置文件 schema",
+  "type": "object",
+  "properties": {
+    "extends": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ],
+      "description": "继承的 ESLint 配置"
+    },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "description": "使用的 ESLint 插件"
+    },
+    "rules": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z][a-z0-9/-]*$": {
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": ["off", "warn", "error"]
+            },
+            {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string",
+                  "enum": ["off", "warn", "error"]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "env": {
+      "type": "object",
+      "properties": {
+        "browser": {
+          "type": "boolean"
+        },
+        "node": {
+          "type": "boolean"
+        },
+        "es6": {
+          "type": "boolean"
+        },
+        "es2022": {
+          "type": "boolean"
+        },
+        "commonjs": {
+          "type": "boolean"
+        }
+      }
+    },
+    "parser": {
+      "type": "string",
+      "description": "自定义解析器"
+    },
+    "parserOptions": {
+      "type": "object",
+      "properties": {
+        "ecmaVersion": {
+          "oneOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string",
+              "enum": ["latest"]
+            }
+          ]
+        },
+        "sourceType": {
+          "type": "string",
+          "enum": ["script", "module"]
+        },
+        "ecmaFeatures": {
+          "type": "object",
+          "properties": {
+            "globalReturn": {
+              "type": "boolean"
+            },
+            "impliedStrict": {
+              "type": "boolean"
+            },
+            "jsx": {
+              "type": "boolean"
+            }
+          }
+        },
+        "project": {
+          "type": "string",
+          "description": "TypeScript 项目配置文件路径"
+        },
+        "tsconfigRootDir": {
+          "type": "string",
+          "description": "TypeScript 配置文件根目录"
+        }
+      }
+    },
+    "overrides": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "files": {
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "excludedFiles": {
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "extends": {
+            "description": "重写继承配置"
+          },
+          "rules": {
+            "description": "重写规则配置"
+          }
+        }
+      }
+    },
+    "ignorePatterns": {
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "string"
+        }
+      ]
+    }
+  }
+}

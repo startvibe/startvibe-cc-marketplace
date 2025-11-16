@@ -5,13 +5,13 @@
 **Status**: Draft  
 **Input**: User description: "$ARGUMENTS"
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 <!--
   IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
   Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
   you should still have a viable MVP (Minimum Viable Product) that delivers value.
-  
+
   Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
   Think of each story as a standalone slice of functionality that can be:
   - Developed independently
@@ -75,7 +75,7 @@
 - What happens when [boundary condition]?
 - How does system handle [error scenario]?
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 <!--
   ACTION REQUIRED: The content in this section represents placeholders.
@@ -92,30 +92,30 @@
 - **FR-006**: 插件必须优雅地处理错误并提供有意义的反馈
 - **FR-007**: 插件不得干扰 Claude Code 的核心功能
 
-*开发工具需求:*
+_开发工具需求:_
 
 - **FR-008**: 插件必须配置 ESLint 和 Prettier 进行代码质量控制
 - **FR-009**: 插件必须使用 Husky 设置 Git 提交前检查钩子
 - **FR-010**: 插件必须使用 pnpm 作为包管理器
 - **FR-011**: 插件必须包含完整的开发配置文件（`.eslintrc`, `.prettierrc`, `package.json`）
 
-*插件特定需求:*
+_插件特定需求:_
 
 - **FR-012**: 插件必须 [特定插件功能，例如：提供斜杠命令 X]
 - **FR-013**: 插件必须 [特定集成，例如：通过 MCP 连接到服务 Y]
 - **FR-014**: 插件必须 [特定数据处理，例如：缓存响应 Z 时间]
 
-*标记不明确需求的示例:*
+_标记不明确需求的示例:_
 
 - **FR-015**: 插件必须集成到 [需要澄清：未指定外部服务]
 - **FR-016**: 插件必须支持 [需要澄清：未定义身份验证方法]
 
-### Key Entities *(include if feature involves data)*
+### Key Entities _(include if feature involves data)_
 
 - **[Entity 1]**: [What it represents, key attributes without implementation]
 - **[Entity 2]**: [What it represents, relationships to other entities]
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 <!--
   ACTION REQUIRED: Define measurable success criteria.

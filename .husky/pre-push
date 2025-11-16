@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+. "$(dirname "$0")/_/husky.sh"
+
+# 运行完整测试套件
+echo "🧪 Running full test suite before push..."
+
+# 运行测试
+echo "Running tests..."
+npm test
+
+# 运行完整验证
+echo "Running full validation..."
+npm run validate
+
+echo "✅ Pre-push checks passed!"

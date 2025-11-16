@@ -1,0 +1,14 @@
+{
+  "name": "startvibe-cc-marketplace",
+  "owner": {
+    "name": "StartVibe Team",
+    "email": "dev@startvibe.com",
+    "url": "https://startvibe.com"
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "description": "StartVibe Claude Code 插件市场 - 提供开发工具配置和最佳实践",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": []
+}

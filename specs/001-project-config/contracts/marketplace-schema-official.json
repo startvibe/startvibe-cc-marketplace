@@ -1,0 +1,227 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Claude Code Marketplace Configuration (Official)",
+  "description": "Claude Code 市场配置文件 schema - 基于官方文档",
+  "type": "object",
+  "required": ["name", "owner", "plugins"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "市场标识符（kebab-case，无空格）"
+    },
+    "owner": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string",
+              "format": "email"
+            },
+            "url": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        }
+      ],
+      "description": "市场维护者信息"
+    },
+    "plugins": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/pluginEntry"
+      }
+    }
+  },
+  "definitions": {
+    "pluginEntry": {
+      "type": "object",
+      "required": ["name", "source"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "插件标识符（kebab-case，无空格）"
+        },
+        "source": {
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "插件源地址（相对路径或直接 URL）"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "source": {
+                  "type": "string",
+                  "enum": ["github", "git", "url"]
+                },
+                "repo": {
+                  "type": "string",
+                  "description": "GitHub 仓库（格式：owner/repo）"
+                },
+                "url": {
+                  "type": "string",
+                  "format": "uri",
+                  "description": "Git 仓库 URL"
+                }
+              },
+              "oneOf": [
+                {
+                  "properties": {
+                    "source": { "const": "github" }
+                  },
+                  "required": ["source", "repo"]
+                },
+                {
+                  "properties": {
+                    "source": { "const": "git" }
+                  },
+                  "required": ["source", "url"]
+                },
+                {
+                  "properties": {
+                    "source": { "const": "url" }
+                  },
+                  "required": ["source", "url"]
+                }
+              ]
+            }
+          ]
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "插件简短描述"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+.*$",
+          "description": "插件特定版本（可选）"
+        },
+        "author": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string",
+                  "format": "email"
+                },
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          ],
+          "description": "插件作者信息"
+        },
+        "homepage": {
+          "type": "string",
+          "format": "uri",
+          "description": "插件主页或文档 URL"
+        },
+        "repository": {
+          "type": "string",
+          "format": "uri",
+          "description": "源代码仓库 URL"
+        },
+        "license": {
+          "type": "string",
+          "description": "SPDX 许可证标识符（例如 MIT、Apache-2.0）"
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "用于插件发现和分类的标签"
+        },
+        "category": {
+          "type": "string",
+          "description": "用于组织的插件类别"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "用于可搜索性的标签"
+        },
+        "strict": {
+          "type": "boolean",
+          "default": true,
+          "description": "在插件文件夹中需要 plugin.json（默认：true）"
+        },
+        "commands": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "description": "命令文件或目录的自定义路径"
+        },
+        "agents": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
+          "description": "代理文件的自定义路径"
+        },
+        "hooks": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object"
+            }
+          ],
+          "description": "自定义钩子配置或钩子文件的路径"
+        },
+        "mcpServers": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object"
+            }
+          ],
+          "description": "MCP 服务器配置或 MCP 配置的路径"
+        }
+      }
+    }
+  }
+}
