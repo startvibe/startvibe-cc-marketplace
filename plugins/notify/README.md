@@ -154,6 +154,10 @@ if (hook_event_name === 'Stop') {
     "includeSessionInfo": false,
     "includePermissionMode": false,
     "maxMessageLength": 200
+  },
+  "notification": {
+    "preferNativeWindows": true,
+    "fallbackToNodeNotifier": true
   }
 }
 ```
@@ -185,6 +189,11 @@ if (hook_event_name === 'Stop') {
 - **includeSessionInfo** - 是否包含会话信息
 - **includePermissionMode** - 是否包含权限模式信息
 - **maxMessageLength** - 消息最大长度，超出会被截断
+
+#### 通知配置 (notification)
+
+- **preferNativeWindows** - 在Windows上是否优先使用PowerShell通知 (默认: true)
+- **fallbackToNodeNotifier** - 当PowerShell通知失败时是否回退到node-notifier-cli (默认: true)
 
 ### 自定义示例
 
@@ -303,6 +312,29 @@ echo '{"session_id":"test123","cwd":"/path/to/my-project","hook_event_name":"Sto
 
 ### 常见问题
 
+#### Windows通知权限被禁用 (DisabledForApplication)
+
+如果你在Windows上遇到"Notifications are disabled - Reason: DisabledForApplication"错误，说明Windows系统禁用了snoretoast.exe的通知权限。
+
+**解决方案1：使用PowerShell通知（推荐）**
+插件现在支持Windows PowerShell原生通知，默认已启用。PowerShell通知使用系统内置的System.Windows.Forms，不受snoretoast权限限制。
+
+**解决方案2：手动启用snoretoast权限**
+1. 打开 **Windows 设置** → **系统** → **通知和操作**
+2. 确保 **"获取来自应用和其他发送者的通知"** 已开启
+3. 在应用通知列表中找到相关应用并启用通知
+
+**解决方案3：修改配置**
+在 `config/notify-config.json` 中设置：
+```json
+{
+  "notification": {
+    "preferNativeWindows": true,
+    "fallbackToNodeNotifier": false
+  }
+}
+```
+
 #### 通知不显示
 
 1. **检查插件是否正确安装**
@@ -315,10 +347,13 @@ echo '{"session_id":"test123","cwd":"/path/to/my-project","hook_event_name":"Sto
    /plugin
    ```
 
-2. **验证 node-notifier-cli 可用性**
+2. **验证通知功能**
 
    ```bash
-   # 直接测试 node-notifier-cli
+   # 测试 PowerShell 通知
+   powershell -Command "Add-Type -AssemblyName System.Windows.Forms; $notify = New-Object System.Windows.Forms.NotifyIcon; $notify.BalloonTipTitle = '测试'; $notify.BalloonTipText = '测试消息'; $notify.Visible = $true; $notify.ShowBalloonTip(5000)"
+
+   # 测试 node-notifier-cli
    npx @startvibe/node-notifier-cli notify -t "测试" -m "测试消息"
    ```
 
@@ -334,7 +369,7 @@ echo '{"session_id":"test123","cwd":"/path/to/my-project","hook_event_name":"Sto
 
 4. **检查系统通知权限**
    - macOS: 系统偏好设置 → 安全性与隐私 → 通知
-   - Windows: 设置 → 系统 → 通知
+   - Windows: 设置 → 系统 → 通知和操作
    - Linux: 桌面环境通知设置
 
 5. **查看 Claude Code 日志**

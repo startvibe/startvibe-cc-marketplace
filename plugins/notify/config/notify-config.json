@@ -26,5 +26,9 @@
   "context": {
     "projectNameExtraction": "folder-name",
     "showCurrentDirectory": false
+  },
+  "notification": {
+    "preferNativeWindows": true,
+    "fallbackToNodeNotifier": true
   }
 }

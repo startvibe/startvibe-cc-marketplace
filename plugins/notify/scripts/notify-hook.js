@@ -7,6 +7,7 @@
 
 const { spawn } = require('child_process');
 const fs = require('fs');
+const path = require('path');
 
 // 从 stdin 读取 hook 输入数据
 function readHookInput() {
@@ -35,6 +36,75 @@ function readHookInput() {
 // 发送通知
 function sendNotification(title, message, options = {}) {
   return new Promise((resolve) => {
+    // 加载配置以确定通知方式
+    const config = loadConfig();
+    const notificationConfig = config.notification || {};
+
+    // 在 Windows 上尝试使用 PowerShell 作为备选方案
+    if (process.platform === 'win32' && notificationConfig.preferNativeWindows !== false) {
+      const powershellScript = `
+        Add-Type -AssemblyName System.Windows.Forms
+        Add-Type -AssemblyName System.Drawing
+
+        $notification = New-Object System.Windows.Forms.NotifyIcon
+        $notification.Icon = [System.Drawing.SystemIcons]::Information
+        $notification.BalloonTipTitle = '${title.replace(/'/g, "''")}'
+        $notification.BalloonTipText = '${message.replace(/'/g, "''")}'
+        $notification.Visible = $true
+
+        $notification.ShowBalloonTip(5000)
+        Start-Sleep -Milliseconds 5500
+        $notification.Dispose()
+      `;
+
+      const child = spawn('powershell', ['-Command', powershellScript], {
+        stdio: ['ignore', 'pipe', 'pipe'],
+        timeout: 10000
+      });
+
+      let stdout = '';
+      let stderr = '';
+
+      child.stdout?.on('data', (data) => {
+        stdout += data.toString();
+      });
+
+      child.stderr?.on('data', (data) => {
+        stderr += data.toString();
+      });
+
+      child.on('close', (code) => {
+        if (code === 0) {
+          resolve({ success: true, stdout: 'PowerShell notification sent' });
+        } else {
+          // 如果 PowerShell 失败且允许回退，尝试 node-notifier-cli
+          if (notificationConfig.fallbackToNodeNotifier !== false) {
+            sendNodeNotifierNotification(title, message, options).then(resolve);
+          } else {
+            resolve({ success: false, error: `PowerShell failed with code ${code}: ${stderr}` });
+          }
+        }
+      });
+
+      child.on('error', () => {
+        // 如果 PowerShell 失败且允许回退，尝试 node-notifier-cli
+        if (notificationConfig.fallbackToNodeNotifier !== false) {
+          sendNodeNotifierNotification(title, message, options).then(resolve);
+        } else {
+          resolve({ success: false, error: 'PowerShell notification failed' });
+        }
+      });
+
+    } else {
+      // 非 Windows 系统或配置禁用 PowerShell，直接使用 node-notifier-cli
+      sendNodeNotifierNotification(title, message, options).then(resolve);
+    }
+  });
+}
+
+// 使用 node-notifier-cli 发送通知的原始函数
+function sendNodeNotifierNotification(title, message, options = {}) {
+  return new Promise((resolve) => {
     const args = ['@startvibe/node-notifier-cli', 'notify', '-t', title, '-m', message];
 
     if (options.sound) {
@@ -49,9 +119,21 @@ function sendNotification(title, message, options = {}) {
       args.push('-o', options.open);
     }
 
-    const child = spawn('npx', args, {
+    // 使用更稳健的方式执行 npx
+    let finalArgs = args;
+    let command = 'npx';
+
+    // 如果是 Windows，使用 shell 来执行命令
+    if (process.platform === 'win32') {
+      // 在 Windows 上使用 cmd 来执行 npx
+      command = 'cmd';
+      finalArgs = ['/c', 'npx'].concat(args);
+    }
+
+    const child = spawn(command, finalArgs, {
       stdio: ['ignore', 'pipe', 'pipe'],
-      timeout: 15000
+      timeout: 5000, // 增加超时时间以适应 npx 下载
+      shell: false
     });
 
     let stdout = '';
@@ -66,10 +148,22 @@ function sendNotification(title, message, options = {}) {
     });
 
     child.on('close', (code) => {
-      if (code === 0) {
-        resolve({ success: true, stdout: stdout.trim() });
+      const output = stdout.trim();
+      const errors = stderr.trim();
+
+      // 检查是否成功，即使有警告信息
+      const isSuccess = code === 0 || output.includes('✅') || output.includes('sent');
+
+      if (isSuccess) {
+        resolve({ success: true, stdout: output });
       } else {
-        resolve({ success: false, error: stderr.trim() });
+        // 如果有 npm 警告但没有实际错误，仍然认为是成功
+        const hasWarningsOnly = errors.includes('npm warn') && !errors.includes('ERR!');
+        if (hasWarningsOnly && output) {
+          resolve({ success: true, stdout: output });
+        } else {
+          resolve({ success: false, error: errors });
+        }
       }
     });
 
@@ -120,6 +214,10 @@ function loadConfig() {
     context: {
       projectNameExtraction: 'folder-name',
       showCurrentDirectory: false
+    },
+    notification: {
+      preferNativeWindows: true,
+      fallbackToNodeNotifier: true
     }
   };
 }
@@ -145,16 +243,53 @@ function replaceTemplate(template, variables) {
 }
 
 // 主函数
+// 写日志到文件
+function writeLog(message) {
+  const timestamp = new Date().toISOString();
+  const logEntry = `[${timestamp}] ${message}\n`;
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    // Windows 使用 C:\temp，Unix 使用 /tmp
+    const logDir = process.platform === 'win32' ? 'C:\\temp' : '/tmp';
+    const logPath = path.join(logDir, 'notify-hook.log');
+    fs.appendFileSync(logPath, logEntry);
+  } catch (error) {
+    // 如果写文件失败，输出到 stderr
+    console.error(`Failed to write log: ${error.message}`);
+    console.error(logEntry);
+  }
+}
+
 async function main() {
+  writeLog('=== NOTIFY HOOK STARTED ===');
+  writeLog(`Environment: ${JSON.stringify({
+      CLAUDE_PLUGIN_ROOT: process.env.CLAUDE_PLUGIN_ROOT,
+      NODE_ENV: process.env.NODE_ENV,
+      PWD: process.env.PWD
+    }, null, 2)}`);
+
   try {
     const hookData = await readHookInput();
+    writeLog(`=== HOOK INPUT RECEIVED ===`);
+    writeLog(JSON.stringify(hookData, null, 2));
+
     const config = loadConfig();
+
     const { hook_event_name, cwd, session_id, message, permission_mode } = hookData;
+    writeLog(`=== EXTRACTED VARIABLES ===`);
+    writeLog(JSON.stringify({
+      hook_event_name,
+      cwd,
+      session_id: session_id ? session_id.substring(0, 8) + '...' : 'undefined',
+      message: message ? message.substring(0, 50) + '...' : 'undefined',
+      permission_mode
+    }, null, 2));
 
     // 获取事件配置
     const eventConfig = config.events[hook_event_name];
     if (!eventConfig || !eventConfig.enabled) {
-      console.log(`Event ${hook_event_name} is disabled or not configured`);
+      writeLog(`Event ${hook_event_name} is disabled or not configured`);
       process.exit(0);
     }
 
@@ -215,15 +350,15 @@ async function main() {
     });
 
     if (result.success) {
-      console.log(`✅ 通知发送成功: ${title}`);
+      writeLog(`✅ 通知发送成功: ${title}`);
       process.exit(0);
     } else {
-      console.error(`❌ 通知发送失败: ${result.error}`);
+      writeLog(`❌ 通知发送失败: ${result.error}`);
       process.exit(1);
     }
 
   } catch (error) {
-    console.error(`❌ Hook 脚本执行失败: ${error.message}`);
+    writeLog(`❌ Hook 脚本执行失败: ${error.message}`);
     process.exit(1);
   }
 }
