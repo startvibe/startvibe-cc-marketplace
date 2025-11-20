@@ -254,7 +254,7 @@ _<sup>1 - 当 `strict: true`（默认）时，插件必须包含 `plugin.json` �
   },
   "homepage": "https://docs.company.com/plugins/enterprise-tools",
   "repository": "https://github.com/company/enterprise-plugin",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "keywords": ["enterprise", "workflow", "automation"],
   "category": "productivity",
   "commands": [

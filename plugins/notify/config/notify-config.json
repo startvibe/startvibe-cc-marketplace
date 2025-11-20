@@ -1,0 +1,30 @@
+{
+  "version": "2.0.0",
+  "description": "Claude Code 通知插件配置文件",
+  "events": {
+    "Stop": {
+      "enabled": true,
+      "title": "Claude 响应完成",
+      "messageTemplate": "{{projectName}} - Claude 已完成您的请求处理",
+      "sound": true,
+      "includeProjectInfo": true
+    },
+    "Notification": {
+      "enabled": true,
+      "title": "Claude 需要注意",
+      "messageTemplate": "{{projectName}} - {{message}}",
+      "fallbackMessage": "{{projectName}} - Claude 需要您的确认或输入",
+      "sound": true,
+      "includeProjectInfo": true
+    }
+  },
+  "display": {
+    "includeSessionInfo": false,
+    "includePermissionMode": false,
+    "maxMessageLength": 200
+  },
+  "context": {
+    "projectNameExtraction": "folder-name",
+    "showCurrentDirectory": false
+  }
+}

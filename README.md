@@ -1,231 +1,137 @@
 # StartVibe Claude Code 插件市场
 
-> 为 StartVibe 提供的 Claude Code 插件市场配置项目
+> 为 StartVibe 提供的 Claude Code 插件开发和分发平台
 
 ## 📖 项目简介
 
-本项目建立了完整的开发环境配置和 Claude Code Marketplace 规范合规性，为开发者提供即用的代码质量工具和插件分发解决方案。
+本项目是一个完整的 Claude Code 插件市场，提供经过验证的高质量插件和开发工具，专注于提升开发效率和用户体验。
 
 ### ✨ 主要功能
 
-- **开发环境配置**：预配置 ESLint、Prettier、Husky 和 pnpm
-- **Marketplace 合规**：完全符合 Claude Code 官方规范要求
-- **中文优先文档**：提供全面的中文技术文档
-- **即用型配置**：开箱即用的开发环境设置
+- **插件分发**：提供经过测试的 Claude Code 插件
+- **通知系统**：上下文感知的跨平台通知插件
+- **开发规范**：符合 Claude Code 官方插件规范
+- **中文支持**：完整的中文文档和技术支持
 
 ## 🚀 快速开始
 
 ### 前置要求
 
-- Node.js 18.0.0 或更高版本
-- pnpm 8.0.0 或更高版本
-- Git 版本控制工具
+- Claude Code 已安装并运行
+- 基本的 Git 知识
 
-### 安装和设置
+### 安装插件市场
 
-1. **克隆项目**
-
-   ```bash
-   git clone <repository-url>
-   cd startvibe-cc-marketplace
-   ```
-
-2. **安装依赖**
+1. **添加市场到 Claude Code**
 
    ```bash
-   pnpm install
+   # 在 Claude Code 中运行
+   /plugin marketplace add startvibe/startvibe-cc-marketplace
    ```
 
-3. **初始化开发环境**
+2. **安装可用插件**
 
    ```bash
-   pnpm run dev-setup
+   # 安装通知插件
+   /plugin install notify@startvibe-cc-marketplace
+
+   # 查看所有可用插件
+   /plugin
    ```
 
-4. **验证配置**
+3. **验证安装**
+
    ```bash
-   npm run validate
+   # 检查已安装插件
+   /plugin list
+
+   # 测试插件功能
+   /plugin status notify
    ```
+
+### 可用插件
+
+#### 🔔 Notify 插件
+
+- **功能**：上下文感知的系统通知
+- **特性**：
+  - 自动识别项目名称
+  - 支持 Stop 和 Notification 事件
+  - 跨平台兼容（macOS、Windows、Linux）
+  - 完全可配置的通知内容
+
+详细说明：[plugins/notify/README.md](plugins/notify/README.md)
 
 ## 📁 项目结构
 
 ```
 startvibe-cc-marketplace/
-├── .claude-plugin/               # Claude Code 插件配置
-│   ├── plugin.json              # 插件元数据
+├── .claude-plugin/               # Claude Code 市场配置
 │   ├── marketplace.json         # 市场配置文件
-│   ├── commands/                # 斜杠命令目录
-│   ├── agents/                  # 专门代理目录
-│   ├── skills/                  # 技能实现目录
-│   ├── hooks/                   # 插件钩子目录
-│   ├── validate-plugin.sh       # 插件验证脚本
-│   └── test-marketplace.sh     # 市场测试脚本
-├── commands/                    # 项目命令
-├── agents/                      # 项目代理
-├── skills/                      # 项目技能
-├── hooks/                       # 项目钩子
-├── tests/                        # 测试文件
-│   ├── unit/                    # 单元测试
-│   ├── integration/             # 集成测试
-│   └── contract/                # 契约测试
+├── plugins/                     # 插件目录
+│   └── notify/                  # 通知插件
+│       ├── .claude-plugin/
+│       │   └── plugin.json     # 插件元数据
+│       ├── hooks/
+│       │   └── hooks.json      # Hook 配置
+│       ├── scripts/
+│       │   └── notify-hook.js  # 通知脚本
+│       ├── config/
+│       │   └── notify-config.json # 配置文件
+│       └── README.md            # 插件文档
 ├── docs/                        # 文档目录
-│   ├── zh-CN/                   # 中文文档
-│   │   ├── README.md
-│   │   └── api.md
-│   └── en/                      # 英文文档
-├── .eslintrc.js                 # ESLint 配置
-├── .prettierrc                  # Prettier 配置
-├── .husky/                      # Git hooks
-│   ├── pre-commit              # 提交前检查
-│   └── pre-push                # 推送前检查
-├── package.json                 # 项目配置
-├── pnpm-workspace.yaml         # pnpm 工作空间
-├── .npmrc                       # npm 配置
-├── .gitignore                   # Git 忽略文件
-├── .eslintignore                # ESLint 忽略文件
-└── .prettierignore              # Prettier 忽略文件
+│   └── claude-code-docs/        # Claude Code 中文文档
+└── README.md                    # 本文档
 ```
 
-## 🛠️ 开发工具
+## 🔧 插件开发
 
-### 代码质量检查
+### Claude Code 插件规范
 
-```bash
-# 运行 ESLint 检查
-npm run lint
+本项目完全符合 Claude Code 官方插件规范：
 
-# 自动修复 ESLint 问题
-npm run lint:fix
+- **插件元数据**：符合 plugin.json 规范
+- **市场配置**：符合 marketplace.json 规范
+- **Hook 事件**：支持所有官方 Hook 事件
+- **跨平台兼容**：支持 Windows、macOS、Linux
 
-# 检查代码格式化
-npm run format:check
+### 开发新插件
 
-# 自动格式化代码
-npm run format
-```
+1. 创建插件目录结构
+2. 编写 `.claude-plugin/plugin.json`
+3. 实现 Hook 功能
+4. 添加到 marketplace.json
+5. 测试和验证
 
-### 完整验证
+### 详细的中文文档
 
-```bash
-# 运行完整验证（包括 lint 和 format）
-npm run validate
-```
+项目包含完整的 Claude Code 中文技术文档：
 
-### Git Hooks
-
-项目配置了以下 Git hooks：
-
-- **pre-commit**：自动运行代码质量检查和格式化验证
-- **pre-push**：运行完整测试套件和验证
-
-## 📚 中文文档
-
-详细的中文文档位于 `docs/zh-CN/` 目录：
-
-- [快速入门指南](docs/zh-CN/README.md)
-- [API 文档](docs/zh-CN/api.md)
-
-## 🔧 配置详情
-
-### ESLint 配置
-
-项目使用 ESLint 进行代码质量检查，配置包括：
-
-- JavaScript/ES2022 语法支持
-- 推荐的代码规则
-- 与 Prettier 的兼容性配置
-
-### Prettier 配置
-
-项目使用 Prettier 进行代码格式化，配置包括：
-
-- 单引号优先
-- 2 空格缩进
-- 尾随逗号（ES5 标准）
-- 行宽限制：80 字符
-
-### Husky 配置
-
-项目使用 Husky 管理 Git hooks：
-
-- **pre-commit**：代码质量检查
-- **pre-push**：完整验证流程
-
-### pnpm 配置
-
-项目使用 pnpm 作为包管理器：
-
-- 工作空间支持
-- 锁定文件管理
-- 严格的依赖解析
-
-## 🎯 Claude Code 插件配置
-
-### 插件元数据
-
-`.claude-plugin/plugin.json` 包含：
-
-- 插件名称和版本
-- 作者信息和许可证
-- 支持的 Claude Code 版本
-- 关键词和分类
-
-### 市场配置
-
-`.claude-plugin/marketplace.json` 包含：
-
-- 市场名称和所有者信息
-- 插件条目列表
-- 版本和源地址配置
+- [插件市场指南](docs/claude-code-docs/claude-code-marketplace.md)
+- [插件开发指南](docs/claude-code-docs/claude-code-plugin.md)
+- [Hook 系统指南](docs/claude-code-docs/claude-code-hooks.md)
+- [Hook 参考文档](docs/claude-code-docs/claude-code-hooks-reference.md)
 
 ## 🧪 验证和测试
 
 ### 插件验证
 
 ```bash
-# 验证插件配置
-.claude-plugin/validate-plugin.sh
+# 验证 JSON 语法
+python3 -m json.tool .claude-plugin/marketplace.json
+python3 -m json.tool plugins/notify/.claude-plugin/plugin.json
 ```
 
 ### 市场测试
 
 ```bash
 # 测试市场配置
-.claude-plugin/test-marketplace.sh
+cat .claude-plugin/marketplace.json
 ```
-
-### 配置验证
-
-```bash
-# 验证 JSON 语法
-python3 -m json.tool .claude-plugin/plugin.json
-python3 -m json.tool .claude-plugin/marketplace.json
-```
-
-## 🤝 贡献指南
-
-### 开发流程
-
-1. Fork 项目仓库
-2. 创建功能分支
-3. 进行开发和测试
-4. 提交 Pull Request
-
-### 代码规范
-
-- 所有代码必须通过 ESLint 检查
-- 代码必须符合 Prettier 格式化标准
-- 提交信息遵循 Conventional Commits 规范
-
-### 文档要求
-
-- 优先使用中文编写文档
-- 代码和技术术语保持原文
-- 提供清晰的使用示例
 
 ## 📄 许可证
 
-本项目采用 [MIT 许可证](LICENSE)。
+本项目采用 [Apache License 2.0](LICENSE)。
 
 ## 📞 联系方式
 
@@ -239,4 +145,4 @@ python3 -m json.tool .claude-plugin/marketplace.json
 
 ---
 
-**StartVibe Claude Code 插件市场** - 让开发更高效，让配置更简单。
+**StartVibe Claude Code 插件市场** - 让开发更高效，让插件更简单。

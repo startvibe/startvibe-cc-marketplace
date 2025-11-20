@@ -14,7 +14,7 @@
   "version": "1.0.0",
   "description": "Cross-platform system notifications for Claude Code events",
   "author": "StartVibe Team",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "keywords": ["notification", "system", "cross-platform", "desktop"],
   "engines": {
     "claude-code": ">=1.0.0"
@@ -153,7 +153,7 @@
   "version": "1.0.0",
   "plugins": ["./plugins/notify-plugin"],
   "author": "StartVibe Team",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/startvibe/startvibe-cc-marketplace"

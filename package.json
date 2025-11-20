@@ -29,7 +29,7 @@
     "name": "Jianan",
     "email": "startvibe@linlaoshi.top"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",

@@ -12,16 +12,16 @@
   },
   "plugins": [
     {
-      "name": "notify-plugin",
-      "source": "./plugins/notify-plugin",
-      "description": "Cross-platform system notifications for Claude Code events using native platform tools",
-      "version": "1.0.0",
+      "name": "notify",
+      "source": "./plugins/notify",
+      "description": "Cross-platform system notifications for Claude Code events using @startvibe/node-notifier-cli",
+      "version": "2.0.0",
       "author": {
         "name": "Jianan",
         "email": "startvibe@linlaoshi.top"
       },
       "homepage": "https://startvibe.linlaoshi.top",
-      "license": "MIT",
+      "license": "Apache-2.0",
       "keywords": ["notification", "system", "cross-platform", "desktop"],
       "category": "productivity"
     }
