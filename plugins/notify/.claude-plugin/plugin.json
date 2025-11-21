@@ -7,6 +7,5 @@
     "email": "startvibe@linlaoshi.top"
   },
   "license": "Apache-2.0",
-  "keywords": ["notification", "system", "utility", "cross-platform", "node-notifier-cli"],
-  "hooks": "./hooks/hooks.json"
+  "keywords": ["notification", "system", "utility", "cross-platform", "node-notifier-cli", "notify", "toast", "alert"]
 }
