@@ -4,14 +4,15 @@
 
 ## 📖 项目简介
 
-本项目是一个完整的 Claude Code 插件市场，提供经过验证的高质量插件和开发工具，专注于提升开发效率和用户体验。
+基于 Node.js 的 Claude Code 插件市场，使用原生系统通知工具，提供轻量级、跨平台的插件解决方案。
 
-### ✨ 主要功能
+### ✨ 核心特性
 
-- **插件分发**：提供经过测试的 Claude Code 插件
-- **通知系统**：上下文感知的跨平台通知插件
-- **开发规范**：符合 Claude Code 官方插件规范
-- **中文支持**：完整的中文文档和技术支持
+- **原生通知调用**：通过 Node.js child_process 调用 osascript (macOS)、notify-send (Linux)、PowerShell (Windows)
+- **零第三方依赖**：仅使用 Node.js 内置模块 (child_process, fs, path)
+- **高性能**：Hook 响应时间 < 2秒，直接调用系统原生通知工具
+- **上下文感知**：自动识别项目名称和会话信息
+- **跨平台兼容**：完整支持 macOS、Windows、Linux
 
 ## 🚀 快速开始
 
@@ -51,14 +52,27 @@
 
 ### 可用插件
 
-#### 🔔 Notify 插件
+#### 🔔 Notify 插件 - Node.js 实现版本
 
-- **功能**：上下文感知的系统通知
-- **特性**：
-  - 自动识别项目名称
-  - 支持 Stop 和 Notification 事件
-  - 跨平台兼容（macOS、Windows、Linux）
-  - 完全可配置的通知内容
+**核心架构**：单个 Node.js 脚本，通过 child_process 调用原生系统通知工具。
+
+- **实现方式**：
+  - macOS: `osascript` - AppleScript 系统通知
+  - Linux: `notify-send` - Desktop Notifications Protocol
+  - Windows: `PowerShell` - System.Windows.Forms NotifyIcon
+
+- **技术特性**：
+  - 🚀 **零第三方依赖** - 仅使用 Node.js 内置模块
+  - ⚡ **毫秒级响应** - Hook 响应时间 < 2秒
+  - 🔧 **安全处理** - 非阻塞进程管理，自动清理
+  - 📱 **上下文感知** - 自动提取项目名和会话信息
+
+**文件结构**：
+
+```
+scripts/
+└── notify-hook.js           # 21KB 综合处理脚本
+```
 
 详细说明：[plugins/notify/README.md](plugins/notify/README.md)
 
@@ -67,81 +81,49 @@
 ```
 startvibe-cc-marketplace/
 ├── .claude-plugin/               # Claude Code 市场配置
-│   ├── marketplace.json         # 市场配置文件
+│   └── marketplace.json         # 市场配置文件
 ├── plugins/                     # 插件目录
-│   └── notify/                  # 通知插件
+│   └── notify/                  # 通知插件 (v2.0.0)
 │       ├── .claude-plugin/
 │       │   └── plugin.json     # 插件元数据
 │       ├── hooks/
-│       │   └── hooks.json      # Hook 配置
+│       │   └── hooks.json      # Hook 事件配置
 │       ├── scripts/
-│       │   └── notify-hook.js  # 通知脚本
+│       │   └── notify-hook.js  # 21KB 综合通知处理脚本
 │       ├── config/
-│       │   └── notify-config.json # 配置文件
-│       └── README.md            # 插件文档
+│       │   └── notify-config.json # JSON 配置文件
+│       └── README.md            # 插件详细文档
+├── specs/                       # 规格和契约目录
+│   ├── 001-project-config/      # 项目配置规格
+│   │   └── contracts/           # 配置文件契约
+│   └── 002-notify-plugin/       # 通知插件规格
+│       └── contracts/           # 插件配置契约
 ├── docs/                        # 文档目录
 │   └── claude-code-docs/        # Claude Code 中文文档
 └── README.md                    # 本文档
 ```
 
-## 🔧 插件开发
-
-### Claude Code 插件规范
-
-本项目完全符合 Claude Code 官方插件规范：
-
-- **插件元数据**：符合 plugin.json 规范
-- **市场配置**：符合 marketplace.json 规范
-- **Hook 事件**：支持所有官方 Hook 事件
-- **跨平台兼容**：支持 Windows、macOS、Linux
-
-### 开发新插件
-
-1. 创建插件目录结构
-2. 编写 `.claude-plugin/plugin.json`
-3. 实现 Hook 功能
-4. 添加到 marketplace.json
-5. 测试和验证
-
-### 详细的中文文档
-
-项目包含完整的 Claude Code 中文技术文档：
-
-- [插件市场指南](docs/claude-code-docs/claude-code-marketplace.md)
-- [插件开发指南](docs/claude-code-docs/claude-code-plugin.md)
-- [Hook 系统指南](docs/claude-code-docs/claude-code-hooks.md)
-- [Hook 参考文档](docs/claude-code-docs/claude-code-hooks-reference.md)
-
-## 🧪 验证和测试
-
-### 插件验证
+## 🧪 测试
 
 ```bash
-# 验证 JSON 语法
-python3 -m json.tool .claude-plugin/marketplace.json
-python3 -m json.tool plugins/notify/.claude-plugin/plugin.json
-```
 
-### 市场测试
-
-```bash
-# 测试市场配置
-cat .claude-plugin/marketplace.json
+# 测试通知功能
+echo '{"hook_event_name":"Stop","cwd":"/test/project"}' | node plugins/notify/scripts/notify-hook.js
 ```
 
 ## 📄 许可证
 
 本项目采用 [Apache License 2.0](LICENSE)。
 
+## 🙏 致谢
+
+感谢 Claude Code 团队提供优秀的插件生态系统，以及所有为开源社区做出贡献的开发者。
+
 ## 📞 联系方式
 
 - **项目维护者**：Jianan
 - **邮箱**：startvibe@linlaoshi.top
 - **网址**：https://startvibe.linlaoshi.top
-
-## 🙏 致谢
-
-感谢 Claude Code 团队提供优秀的插件生态系统，以及所有为开源社区做出贡献的开发者。
 
 ---
 
