@@ -22,11 +22,11 @@
 
 ### 支持平台
 
-| 操作系统 | 通知实现      | 状态      | 要求                           |
-| -------- | ------------- | --------- | ------------------------------ |
-| macOS    | native-notifier | ✅ 自动   | 自动下载依赖                   |
-| Linux    | notify-send   | ✅ 自动   | 自动下载依赖                   |
-| Windows  | PowerShell    | ✅ 自动   | 自动下载依赖                   |
+| 操作系统 | 通知实现        | 状态    | 要求         |
+| -------- | --------------- | ------- | ------------ |
+| macOS    | native-notifier | ✅ 自动 | 自动下载依赖 |
+| Linux    | notify-send     | ✅ 自动 | 自动下载依赖 |
+| Windows  | PowerShell      | ✅ 自动 | 自动下载依赖 |
 
 ## 📦 安装说明
 
@@ -69,6 +69,7 @@ claude
 ### 通知示例
 
 **Stop 事件**：
+
 ```
 标题: Claude 响应完成
 消息: my-awesome-project - Claude 已完成您的请求处理
@@ -76,6 +77,7 @@ claude
 ```
 
 **Notification 事件**：
+
 ```
 标题: Claude 需要注意
 消息: my-awesome-project - Claude 需要您的权限来使用 Bash
@@ -320,12 +322,14 @@ echo '{"session_id":"test123","cwd":"/path/to/my-project","hook_event_name":"Sto
 插件现在支持Windows PowerShell原生通知，默认已启用。PowerShell通知使用系统内置的System.Windows.Forms，不受snoretoast权限限制。
 
 **解决方案2：手动启用snoretoast权限**
+
 1. 打开 **Windows 设置** → **系统** → **通知和操作**
 2. 确保 **"获取来自应用和其他发送者的通知"** 已开启
 3. 在应用通知列表中找到相关应用并启用通知
 
 **解决方案3：修改配置**
 在 `config/notify-config.json` 中设置：
+
 ```json
 {
   "notification": {
@@ -395,11 +399,13 @@ npx --yes @startvibe/node-notifier-cli notify -t "测试" -m "测试"
 #### Hook 脚本执行错误
 
 1. **检查 Node.js 版本**
+
    ```bash
    node --version  # 需要 >= 14.0.0
    ```
 
 2. **验证脚本语法**
+
    ```bash
    node -c plugins/notify/scripts/notify-hook.js
    ```

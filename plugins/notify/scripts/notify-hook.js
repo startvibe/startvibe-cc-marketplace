@@ -2,15 +2,17 @@
 
 /**
  * Notify Hook Script - 解析 Claude Code Hook 上下文并发送通知
- * 基于 @startvibe/node-notifier-cli
+ * 跨平台原生系统通知实现 (无第三方依赖)
  */
+
+/* eslint-disable no-console, no-unused-vars */
 
 const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
 // 从 stdin 读取 hook 输入数据
-function readHookInput() {
+function readHookInput(console) {
   return new Promise((resolve, reject) => {
     let input = '';
     process.stdin.on('data', chunk => {
@@ -22,159 +24,413 @@ function readHookInput() {
         const data = JSON.parse(input);
         resolve(data);
       } catch (error) {
+        if (console) {
+          console.error(`💥 [INPUT] Invalid JSON input: ${error.message}`);
+        }
         reject(new Error(`Invalid JSON input: ${error.message}`));
       }
     });
 
-    // 超时处理
-    setTimeout(() => {
-      reject(new Error('Timeout reading hook input'));
-    }, 5000);
-  });
-}
-
-// 发送通知
-function sendNotification(title, message, options = {}) {
-  return new Promise((resolve) => {
-    // 加载配置以确定通知方式
+    // 超时处理 - 使用配置中的超时时间
     const config = loadConfig();
-    const notificationConfig = config.notification || {};
+    const hookInputTimeout = config.notification?.timeout?.hookInput || 5000;
+    setTimeout(() => {
+      if (console) {
+        console.warn(
+          `⏰ [INPUT] Timeout reading hook input (${hookInputTimeout}ms)`
+        );
+      }
+      reject(new Error('Timeout reading hook input'));
+    }, hookInputTimeout);
+  });
+}
 
-    // 在 Windows 上尝试使用 PowerShell 作为备选方案
-    if (process.platform === 'win32' && notificationConfig.preferNativeWindows !== false) {
-      const powershellScript = `
-        Add-Type -AssemblyName System.Windows.Forms
-        Add-Type -AssemblyName System.Drawing
+// Windows PowerShell 通知函数 - 安全非阻塞模式 + 完整日志
+function sendWindowsNotification(title, message, console /* options = {} */) {
+  return new Promise(resolve => {
+    const startTime = Date.now();
+    console.log(
+      `🚀 [WINDOWS] Starting notification: title="${title}", message_length=${message.length}`
+    );
 
-        $notification = New-Object System.Windows.Forms.NotifyIcon
-        $notification.Icon = [System.Drawing.SystemIcons]::Information
-        $notification.BalloonTipTitle = '${title.replace(/'/g, "''")}'
-        $notification.BalloonTipText = '${message.replace(/'/g, "''")}'
-        $notification.Visible = $true
+    try {
+      // 转义 PowerShell 字符串
+      const escapedTitle = title.replace(/"/g, '""').replace(/'/g, "''");
+      const escapedMessage = message.replace(/"/g, '""').replace(/'/g, "''");
 
-        $notification.ShowBalloonTip(5000)
-        Start-Sleep -Milliseconds 5500
-        $notification.Dispose()
-      `;
+      const command = [
+        '-NoProfile',
+        '-WindowStyle',
+        'Hidden',
+        '-Command',
+        `
+          Add-Type -AssemblyName System.Windows.Forms;
+          $n = New-Object System.Windows.Forms.NotifyIcon;
+          $n.Icon = [System.Drawing.SystemIcons]::Information;
+          $n.BalloonTipTitle = '${escapedTitle}';
+          $n.BalloonTipText = '${escapedMessage}';
+          $n.Visible = $true;
+          $n.ShowBalloonTip(3000);
+          $n.Dispose();
+        `,
+      ];
 
-      const child = spawn('powershell', ['-Command', powershellScript], {
-        stdio: ['ignore', 'pipe', 'pipe'],
-        timeout: 10000
+      console.log(
+        `📡 [WINDOWS] Spawning PowerShell process: command=${JSON.stringify(command)}`
+      );
+
+      const child = spawn('powershell.exe', command, {
+        stdio: 'ignore',
+        shell: false,
       });
 
-      let stdout = '';
-      let stderr = '';
+      const pid = child.pid;
+      console.log(`👶 [WINDOWS] Process started: PID=${pid}`);
 
-      child.stdout?.on('data', (data) => {
-        stdout += data.toString();
-      });
-
-      child.stderr?.on('data', (data) => {
-        stderr += data.toString();
-      });
-
-      child.on('close', (code) => {
-        if (code === 0) {
-          resolve({ success: true, stdout: 'PowerShell notification sent' });
-        } else {
-          // 如果 PowerShell 失败且允许回退，尝试 node-notifier-cli
-          if (notificationConfig.fallbackToNodeNotifier !== false) {
-            sendNodeNotifierNotification(title, message, options).then(resolve);
-          } else {
-            resolve({ success: false, error: `PowerShell failed with code ${code}: ${stderr}` });
-          }
+      // 设置清理超时，防止僵尸进程
+      const cleanupTimeoutMs = getProcessCleanupTimeout();
+      const cleanupTimeout = setTimeout(() => {
+        console.log(
+          `⏰ [WINDOWS] Cleanup timeout reached (${cleanupTimeoutMs}ms), killing process PID=${pid}`
+        );
+        try {
+          child.kill('SIGTERM');
+          console.log(`🔪 [WINDOWS] Process PID=${pid} killed via SIGTERM`);
+        } catch (error) {
+          console.log(
+            `❌ [WINDOWS] Failed to kill process PID=${pid}: ${error.message}`
+          );
         }
+      }, cleanupTimeoutMs);
+
+      // 监听进程结束，清理定时器
+      child.on('close', (code, signal) => {
+        const duration = Date.now() - startTime;
+        clearTimeout(cleanupTimeout);
+        console.log(
+          `✅ [WINDOWS] Process closed: PID=${pid}, code=${code}, signal=${signal}, duration=${duration}ms`
+        );
       });
 
-      child.on('error', () => {
-        // 如果 PowerShell 失败且允许回退，尝试 node-notifier-cli
-        if (notificationConfig.fallbackToNodeNotifier !== false) {
-          sendNodeNotifierNotification(title, message, options).then(resolve);
-        } else {
-          resolve({ success: false, error: 'PowerShell notification failed' });
-        }
+      child.on('error', error => {
+        const duration = Date.now() - startTime;
+        clearTimeout(cleanupTimeout);
+        console.log(
+          `❌ [WINDOWS] Process error: PID=${pid}, error=${error.message}, duration=${duration}ms`
+        );
       });
 
-    } else {
-      // 非 Windows 系统或配置禁用 PowerShell，直接使用 node-notifier-cli
-      sendNodeNotifierNotification(title, message, options).then(resolve);
+      const duration = Date.now() - startTime;
+      console.log(
+        `✨ [WINDOWS] Notification sent successfully: PID=${pid}, init_duration=${duration}ms`
+      );
+
+      resolve({
+        success: true,
+        stdout: 'Windows notification sent (safe mode)',
+        method: 'windows-system',
+        pid,
+      });
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      console.log(
+        `💥 [WINDOWS] Failed to send notification: error=${error.message}, duration=${duration}ms`
+      );
+      resolve({
+        success: false,
+        error: error.message,
+        method: 'windows-system',
+      });
     }
   });
 }
 
-// 使用 node-notifier-cli 发送通知的原始函数
-function sendNodeNotifierNotification(title, message, options = {}) {
-  return new Promise((resolve) => {
-    const args = ['@startvibe/node-notifier-cli', 'notify', '-t', title, '-m', message];
+// macOS 系统通知函数 (使用 osascript) - 安全非阻塞模式 + 完整日志
+function sendMacOSNotification(title, message, console, options = {}) {
+  return new Promise(resolve => {
+    const startTime = Date.now();
+    console.log(
+      `🚀 [MACOS] Starting notification: title="${title}", message_length=${message.length}`
+    );
 
-    if (options.sound) {
-      args.push('-s');
-    }
+    try {
+      // 转义特殊字符
+      const escapedTitle = title.replace(/"/g, '\\"').replace(/'/g, "\\'");
+      const escapedMessage = message.replace(/"/g, '\\"').replace(/'/g, "\\'");
 
-    if (options.icon) {
-      args.push('-i', options.icon);
-    }
+      // 构建 AppleScript 命令
+      let appleScript = `display notification "${escapedMessage}" with title "${escapedTitle}"`;
 
-    if (options.open) {
-      args.push('-o', options.open);
-    }
-
-    // 使用更稳健的方式执行 npx
-    let finalArgs = args;
-    let command = 'npx';
-
-    // 如果是 Windows，使用 shell 来执行命令
-    if (process.platform === 'win32') {
-      // 在 Windows 上使用 cmd 来执行 npx
-      command = 'cmd';
-      finalArgs = ['/c', 'npx'].concat(args);
-    }
-
-    const child = spawn(command, finalArgs, {
-      stdio: ['ignore', 'pipe', 'pipe'],
-      timeout: 5000, // 增加超时时间以适应 npx 下载
-      shell: false
-    });
-
-    let stdout = '';
-    let stderr = '';
-
-    child.stdout?.on('data', (data) => {
-      stdout += data.toString();
-    });
-
-    child.stderr?.on('data', (data) => {
-      stderr += data.toString();
-    });
-
-    child.on('close', (code) => {
-      const output = stdout.trim();
-      const errors = stderr.trim();
-
-      // 检查是否成功，即使有警告信息
-      const isSuccess = code === 0 || output.includes('✅') || output.includes('sent');
-
-      if (isSuccess) {
-        resolve({ success: true, stdout: output });
-      } else {
-        // 如果有 npm 警告但没有实际错误，仍然认为是成功
-        const hasWarningsOnly = errors.includes('npm warn') && !errors.includes('ERR!');
-        if (hasWarningsOnly && output) {
-          resolve({ success: true, stdout: output });
-        } else {
-          resolve({ success: false, error: errors });
-        }
+      // 添加声音
+      if (options.sound !== false) {
+        const soundName = options.sound || 'Glass';
+        appleScript += ` sound name "${soundName}"`;
+        console.log(`🔊 [MACOS] Added sound: ${soundName}`);
       }
-    });
 
-    child.on('error', (error) => {
-      resolve({ success: false, error: error.message });
-    });
+      // 添加副标题（可选）
+      if (options.subtitle) {
+        const escapedSubtitle = options.subtitle
+          .replace(/"/g, '\\"')
+          .replace(/'/g, "\\'");
+        appleScript += ` subtitle "${escapedSubtitle}"`;
+        console.log(`📝 [MACOS] Added subtitle: ${options.subtitle}`);
+      }
+
+      console.log(
+        `📡 [MACOS] Spawning osascript process: script="${appleScript.substring(0, 100)}..."`
+      );
+
+      const child = spawn('osascript', ['-e', appleScript], {
+        stdio: 'ignore',
+      });
+
+      const pid = child.pid;
+      console.log(`👶 [MACOS] Process started: PID=${pid}`);
+
+      // 设置清理超时
+      const cleanupTimeoutMs = getProcessCleanupTimeout();
+      const cleanupTimeout = setTimeout(() => {
+        console.log(
+          `⏰ [MACOS] Cleanup timeout reached (${cleanupTimeoutMs}ms), killing process PID=${pid}`
+        );
+        try {
+          child.kill('SIGTERM');
+          console.log(`🔪 [MACOS] Process PID=${pid} killed via SIGTERM`);
+        } catch (error) {
+          console.log(
+            `❌ [MACOS] Failed to kill process PID=${pid}: ${error.message}`
+          );
+        }
+      }, cleanupTimeoutMs);
+
+      // 监听进程结束，清理定时器
+      child.on('close', (code, signal) => {
+        const duration = Date.now() - startTime;
+        clearTimeout(cleanupTimeout);
+        console.log(
+          `✅ [MACOS] Process closed: PID=${pid}, code=${code}, signal=${signal}, duration=${duration}ms`
+        );
+      });
+
+      child.on('error', error => {
+        const duration = Date.now() - startTime;
+        clearTimeout(cleanupTimeout);
+        console.log(
+          `❌ [MACOS] Process error: PID=${pid}, error=${error.message}, duration=${duration}ms`
+        );
+      });
+
+      const duration = Date.now() - startTime;
+      console.log(
+        `✨ [MACOS] Notification sent successfully: PID=${pid}, init_duration=${duration}ms`
+      );
+
+      resolve({
+        success: true,
+        stdout: 'macOS notification sent (safe mode)',
+        method: 'macos-system',
+        pid,
+      });
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      console.log(
+        `💥 [MACOS] Failed to send notification: error=${error.message}, duration=${duration}ms`
+      );
+      resolve({ success: false, error: error.message, method: 'macos-system' });
+    }
+  });
+}
+
+// Linux 系统通知函数 - 安全非阻塞模式 + 完整日志
+function sendLinuxNotification(title, message, console /* options = {} */) {
+  return new Promise(resolve => {
+    const startTime = Date.now();
+    console.log(
+      `🚀 [LINUX] Starting notification: title="${title}", message_length=${message.length}`
+    );
+
+    try {
+      // 转义字符
+      const escapedTitle = title.replace(/"/g, '\\"').replace(/'/g, "\\'");
+      const escapedMessage = message.replace(/"/g, '\\"').replace(/'/g, "\\'");
+
+      const command = [
+        escapedTitle,
+        escapedMessage,
+        '--urgency=low',
+        '--expire-time=3000',
+        '--hint=int:transient:1',
+        '--app-name=Claude-Code',
+      ];
+
+      console.log(
+        `📡 [LINUX] Spawning notify-send process: command=${JSON.stringify(command)}`
+      );
+
+      const child = spawn('notify-send', command, {
+        stdio: 'ignore',
+      });
+
+      const pid = child.pid;
+      console.log(`👶 [LINUX] Process started: PID=${pid}`);
+
+      // 设置清理超时
+      const cleanupTimeoutMs = getProcessCleanupTimeout();
+      const cleanupTimeout = setTimeout(() => {
+        console.log(
+          `⏰ [LINUX] Cleanup timeout reached (${cleanupTimeoutMs}ms), killing process PID=${pid}`
+        );
+        try {
+          child.kill('SIGTERM');
+          console.log(`🔪 [LINUX] Process PID=${pid} killed via SIGTERM`);
+        } catch (error) {
+          console.log(
+            `❌ [LINUX] Failed to kill process PID=${pid}: ${error.message}`
+          );
+        }
+      }, cleanupTimeoutMs);
+
+      // 监听进程结束，清理定时器
+      child.on('close', (code, signal) => {
+        const duration = Date.now() - startTime;
+        clearTimeout(cleanupTimeout);
+        console.log(
+          `✅ [LINUX] Process closed: PID=${pid}, code=${code}, signal=${signal}, duration=${duration}ms`
+        );
+      });
+
+      child.on('error', error => {
+        const duration = Date.now() - startTime;
+        clearTimeout(cleanupTimeout);
+        console.log(
+          `❌ [LINUX] Process error: PID=${pid}, error=${error.message}, duration=${duration}ms`
+        );
+      });
+
+      const duration = Date.now() - startTime;
+      console.log(
+        `✨ [LINUX] Notification sent successfully: PID=${pid}, init_duration=${duration}ms`
+      );
+
+      resolve({
+        success: true,
+        stdout: 'Linux notification sent (safe mode)',
+        method: 'linux-system',
+        pid,
+      });
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      console.log(
+        `💥 [LINUX] Failed to send notification: error=${error.message}, duration=${duration}ms`
+      );
+      resolve({ success: false, error: error.message, method: 'linux-system' });
+    }
+  });
+}
+
+// 跨平台通知发送函数 - 完整日志
+function sendNotification(title, message, console) {
+  return new Promise(resolve => {
+    const startTime = Date.now();
+    console.log(
+      `🎯 [MAIN] Starting cross-platform notification: title="${title}", message_length=${message.length}`
+    );
+
+    // 加载配置以确定通知方式
+    let config;
+    try {
+      config = loadConfig(console);
+      console.log(`⚙️  [MAIN] Configuration loaded successfully`);
+    } catch (error) {
+      console.log(`❌ [MAIN] Failed to load configuration: ${error.message}`);
+      config = {};
+    }
+
+    const notificationConfig = config.notification || {};
+    console.log(
+      `🔧 [MAIN] Notification config: ${JSON.stringify(notificationConfig)}`
+    );
+
+    let selectedPlatform = '';
+    let selectedMethod = '';
+
+    // 根据平台选择系统通知方式
+    if (
+      process.platform === 'win32' &&
+      notificationConfig.preferNativeWindows !== false
+    ) {
+      // Windows: 使用 PowerShell 系统通知
+      selectedPlatform = 'Windows';
+      selectedMethod = 'PowerShell';
+      console.log(
+        `🖥️  [MAIN] Selected platform: ${selectedPlatform} - ${selectedMethod} (preferred)`
+      );
+      sendWindowsNotification(title, message, console).then(resolve);
+    } else if (
+      process.platform === 'darwin' &&
+      notificationConfig.preferNativeMacOS !== false
+    ) {
+      // macOS: 使用 osascript 系统通知
+      selectedPlatform = 'macOS';
+      selectedMethod = 'osascript';
+      console.log(
+        `🍎 [MAIN] Selected platform: ${selectedPlatform} - ${selectedMethod} (preferred)`
+      );
+      sendMacOSNotification(title, message, console).then(resolve);
+    } else if (process.platform === 'linux') {
+      // Linux: 使用 notify-send/zenity 系统通知
+      selectedPlatform = 'Linux';
+      selectedMethod = 'notify-send';
+      console.log(
+        `🐧 [MAIN] Selected platform: ${selectedPlatform} - ${selectedMethod}`
+      );
+      sendLinuxNotification(title, message, console).then(resolve);
+    } else {
+      // 默认: 根据平台选择最佳方案
+      if (process.platform === 'darwin') {
+        selectedPlatform = 'macOS';
+        selectedMethod = 'osascript';
+      } else if (process.platform === 'win32') {
+        selectedPlatform = 'Windows';
+        selectedMethod = 'PowerShell';
+      } else {
+        selectedPlatform = process.platform;
+        selectedMethod = 'default';
+      }
+      console.log(
+        `🔄 [MAIN] Selected fallback platform: ${selectedPlatform} - ${selectedMethod}`
+      );
+
+      if (process.platform === 'darwin') {
+        sendMacOSNotification(title, message, console).then(resolve);
+      } else if (process.platform === 'win32') {
+        sendWindowsNotification(title, message, console).then(resolve);
+      } else {
+        sendLinuxNotification(title, message, console).then(resolve);
+      }
+    }
+
+    // 监听结果并记录最终状态
+    const originalResolve = resolve;
+    resolve = result => {
+      const duration = Date.now() - startTime;
+      if (result.success) {
+        console.log(
+          `✅ [MAIN] Notification completed successfully: platform=${selectedPlatform}, method=${selectedMethod}, duration=${duration}ms, result=${result.stdout}`
+        );
+      } else {
+        console.log(
+          `❌ [MAIN] Notification failed: platform=${selectedPlatform}, method=${selectedMethod}, duration=${duration}ms, error=${result.error}`
+        );
+      }
+      originalResolve(result);
+    };
   });
 }
 
 // 加载配置文件
-function loadConfig() {
+function loadConfig(console) {
   try {
     const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT || __dirname;
     const configPath = path.join(pluginRoot, 'config', 'notify-config.json');
@@ -184,7 +440,11 @@ function loadConfig() {
       return JSON.parse(configContent);
     }
   } catch (error) {
-    console.warn('Failed to load config file, using defaults:', error.message);
+    if (console) {
+      console.log(
+        `⚠️ [CONFIG] Failed to load config file, using defaults: ${error.message}`
+      );
+    }
   }
 
   // 默认配置
@@ -195,7 +455,7 @@ function loadConfig() {
         title: 'Claude 响应完成',
         messageTemplate: '{{projectName}} - Claude 已完成您的请求处理',
         sound: true,
-        includeProjectInfo: true
+        includeProjectInfo: true,
       },
       Notification: {
         enabled: true,
@@ -203,23 +463,29 @@ function loadConfig() {
         messageTemplate: '{{projectName}} - {{message}}',
         fallbackMessage: '{{projectName}} - Claude 需要您的确认或输入',
         sound: true,
-        includeProjectInfo: true
-      }
+        includeProjectInfo: true,
+      },
     },
     display: {
       includeSessionInfo: false,
       includePermissionMode: false,
-      maxMessageLength: 200
-    },
-    context: {
-      projectNameExtraction: 'folder-name',
-      showCurrentDirectory: false
+      maxMessageLength: 200,
     },
     notification: {
+      preferNativeMacOS: true,
       preferNativeWindows: true,
-      fallbackToNodeNotifier: true
-    }
+      timeout: {
+        processCleanup: 6000,
+        hookInput: 5000,
+      },
+    },
   };
+}
+
+// 获取进程清理超时时间
+function getProcessCleanupTimeout() {
+  const config = loadConfig();
+  return config.notification?.timeout?.processCleanup || 6000;
 }
 
 // 获取项目名称（从路径中提取）
@@ -242,54 +508,103 @@ function replaceTemplate(template, variables) {
   });
 }
 
-// 主函数
-// 写日志到文件
-function writeLog(message) {
-  const timestamp = new Date().toISOString();
-  const logEntry = `[${timestamp}] ${message}\n`;
+// 创建文件 console 实例
+function createFileConsole() {
+  const fs = require('fs');
+  const path = require('path');
+  const os = require('os');
+
+  // 使用系统默认的临时目录
+  const logDir = os.tmpdir();
+  const logPath = path.join(logDir, 'notify-hook.log');
+
+  // 创建日志目录（如果不存在）
   try {
-    const fs = require('fs');
-    const path = require('path');
-    // Windows 使用 C:\temp，Unix 使用 /tmp
-    const logDir = process.platform === 'win32' ? 'C:\\temp' : '/tmp';
-    const logPath = path.join(logDir, 'notify-hook.log');
-    fs.appendFileSync(logPath, logEntry);
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir, { recursive: true });
+    }
   } catch (error) {
-    // 如果写文件失败，输出到 stderr
-    console.error(`Failed to write log: ${error.message}`);
-    console.error(logEntry);
+    // 静默处理目录创建失败，输出到原始 console
+    // eslint-disable-next-line no-console
+    console.warn(`Failed to create log directory: ${error.message}`);
   }
+
+  // 创建文件输出流
+  const fileOutput = fs.createWriteStream(logPath, { flags: 'a' });
+
+  // 创建专用的 console 实例用于文件输出
+  const fileConsole = new console.Console({
+    stdout: fileOutput,
+    stderr: fileOutput,
+    colorMode: false,
+  });
+
+  // 添加带时间戳的便捷方法
+  fileConsole.logWithTime = function (...args) {
+    const timestamp = new Date().toISOString();
+    this.log(`[${timestamp}]`, ...args);
+  };
+
+  fileConsole.errorWithTime = function (...args) {
+    const timestamp = new Date().toISOString();
+    this.error(`[${timestamp}]`, ...args);
+    // 同时输出到原始 stderr，用于重要错误
+    // eslint-disable-next-line no-console
+    console.error(`[${timestamp}]`, ...args);
+  };
+
+  fileConsole.warnWithTime = function (...args) {
+    const timestamp = new Date().toISOString();
+    this.warn(`[${timestamp}]`, ...args);
+  };
+
+  return fileConsole;
 }
 
 async function main() {
-  writeLog('=== NOTIFY HOOK STARTED ===');
-  writeLog(`Environment: ${JSON.stringify({
-      CLAUDE_PLUGIN_ROOT: process.env.CLAUDE_PLUGIN_ROOT,
-      NODE_ENV: process.env.NODE_ENV,
-      PWD: process.env.PWD
-    }, null, 2)}`);
+  // 创建文件 console 实例
+  const console = createFileConsole();
+
+  global.startTime = Date.now();
+  console.logWithTime('=== NOTIFY HOOK STARTED ===');
+  console.logWithTime('Environment:', {
+    CLAUDE_PLUGIN_ROOT: process.env.CLAUDE_PLUGIN_ROOT,
+    NODE_ENV: process.env.NODE_ENV,
+    PWD: process.env.PWD,
+    PLATFORM: process.platform,
+    ARCH: process.arch,
+  });
 
   try {
-    const hookData = await readHookInput();
-    writeLog(`=== HOOK INPUT RECEIVED ===`);
-    writeLog(JSON.stringify(hookData, null, 2));
+    const hookData = await readHookInput(console);
+    console.logWithTime('=== HOOK INPUT RECEIVED ===');
+    console.log(JSON.stringify(hookData, null, 2));
 
-    const config = loadConfig();
+    const config = loadConfig(console);
 
-    const { hook_event_name, cwd, session_id, message, permission_mode } = hookData;
-    writeLog(`=== EXTRACTED VARIABLES ===`);
-    writeLog(JSON.stringify({
-      hook_event_name,
-      cwd,
-      session_id: session_id ? session_id.substring(0, 8) + '...' : 'undefined',
-      message: message ? message.substring(0, 50) + '...' : 'undefined',
-      permission_mode
-    }, null, 2));
+    const { hook_event_name, cwd, session_id, message, permission_mode } =
+      hookData;
+    console.logWithTime('=== EXTRACTED VARIABLES ===');
+    console.log(
+      JSON.stringify(
+        {
+          hook_event_name,
+          cwd,
+          session_id: session_id
+            ? session_id.substring(0, 8) + '...'
+            : 'undefined',
+          message: message ? message.substring(0, 50) + '...' : 'undefined',
+          permission_mode,
+        },
+        null,
+        2
+      )
+    );
 
     // 获取事件配置
     const eventConfig = config.events[hook_event_name];
     if (!eventConfig || !eventConfig.enabled) {
-      writeLog(`Event ${hook_event_name} is disabled or not configured`);
+      console.log(`Event ${hook_event_name} is disabled or not configured`);
       process.exit(0);
     }
 
@@ -305,15 +620,22 @@ async function main() {
       sessionId: sessionIdShort,
       message: message || '',
       permissionMode: permission_mode || 'unknown',
-      eventName: hook_event_name
+      eventName: hook_event_name,
     };
 
     // 使用配置生成标题和消息
     let title = eventConfig.title;
-    let messageText = replaceTemplate(eventConfig.messageTemplate, templateVars);
+    let messageText = replaceTemplate(
+      eventConfig.messageTemplate,
+      templateVars
+    );
 
     // 如果是 Notification 事件且没有消息，使用备用消息
-    if (hook_event_name === 'Notification' && !message && eventConfig.fallbackMessage) {
+    if (
+      hook_event_name === 'Notification' &&
+      !message &&
+      eventConfig.fallbackMessage
+    ) {
       messageText = replaceTemplate(eventConfig.fallbackMessage, templateVars);
     }
 
@@ -339,26 +661,33 @@ async function main() {
     }
 
     // 限制消息长度
-    if (config.display.maxMessageLength && fullMessage.length > config.display.maxMessageLength) {
-      fullMessage = fullMessage.substring(0, config.display.maxMessageLength - 3) + '...';
+    if (
+      config.display.maxMessageLength &&
+      fullMessage.length > config.display.maxMessageLength
+    ) {
+      fullMessage =
+        fullMessage.substring(0, config.display.maxMessageLength - 3) + '...';
     }
 
     // 发送通知
-    const result = await sendNotification(title, fullMessage, {
-      sound: eventConfig.sound !== false,
-      timeout: 15
-    });
+    const result = await sendNotification(title, fullMessage, console);
 
+    const totalDuration = Date.now() - global.startTime;
     if (result.success) {
-      writeLog(`✅ 通知发送成功: ${title}`);
+      console.log(
+        `🎉 [MAIN] Hook execution completed successfully: title="${title}", total_duration=${totalDuration}ms`
+      );
+      console.log(`✅ 通知发送成功: ${title}`);
       process.exit(0);
     } else {
-      writeLog(`❌ 通知发送失败: ${result.error}`);
+      console.log(
+        `💔 [MAIN] Hook execution failed: title="${title}", total_duration=${totalDuration}ms, error="${result.error}"`
+      );
+      console.log(`❌ 通知发送失败: ${result.error}`);
       process.exit(1);
     }
-
   } catch (error) {
-    writeLog(`❌ Hook 脚本执行失败: ${error.message}`);
+    console.log(`❌ Hook 脚本执行失败: ${error.message}`);
     process.exit(1);
   }
 }

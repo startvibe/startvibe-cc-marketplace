@@ -23,12 +23,12 @@
     "includePermissionMode": false,
     "maxMessageLength": 200
   },
-  "context": {
-    "projectNameExtraction": "folder-name",
-    "showCurrentDirectory": false
-  },
   "notification": {
     "preferNativeWindows": true,
-    "fallbackToNodeNotifier": true
+    "preferNativeMacOS": true,
+    "timeout": {
+      "processCleanup": 6000,
+      "hookInput": 5000
+    }
   }
 }
