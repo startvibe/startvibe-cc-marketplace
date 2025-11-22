@@ -12,7 +12,7 @@ const fs = require('fs');
 const path = require('path');
 
 // 从 stdin 读取 hook 输入数据
-function readHookInput(console) {
+function readHookInput(console, config) {
   return new Promise((resolve, reject) => {
     let input = '';
     process.stdin.on('data', chunk => {
@@ -32,8 +32,7 @@ function readHookInput(console) {
     });
 
     // 超时处理 - 使用配置中的超时时间
-    const config = loadConfig();
-    const hookInputTimeout = config.notification?.timeout?.hookInput || 5000;
+    const hookInputTimeout = getHookInputTimeout(config);
     setTimeout(() => {
       if (console) {
         console.warn(
@@ -46,7 +45,12 @@ function readHookInput(console) {
 }
 
 // Windows PowerShell 通知函数 - 安全非阻塞模式 + 完整日志
-function sendWindowsNotification(title, message, console /* options = {} */) {
+function sendWindowsNotification(
+  title,
+  message,
+  console,
+  config /* options = {} */
+) {
   return new Promise(resolve => {
     const startTime = Date.now();
     console.log(
@@ -88,7 +92,7 @@ function sendWindowsNotification(title, message, console /* options = {} */) {
       console.log(`👶 [WINDOWS] Process started: PID=${pid}`);
 
       // 设置清理超时，防止僵尸进程
-      const cleanupTimeoutMs = getProcessCleanupTimeout();
+      const cleanupTimeoutMs = getProcessCleanupTimeout(config);
       const cleanupTimeout = setTimeout(() => {
         console.log(
           `⏰ [WINDOWS] Cleanup timeout reached (${cleanupTimeoutMs}ms), killing process PID=${pid}`
@@ -146,7 +150,7 @@ function sendWindowsNotification(title, message, console /* options = {} */) {
 }
 
 // macOS 系统通知函数 (使用 osascript) - 安全非阻塞模式 + 完整日志
-function sendMacOSNotification(title, message, console, options = {}) {
+function sendMacOSNotification(title, message, console, config, options = {}) {
   return new Promise(resolve => {
     const startTime = Date.now();
     console.log(
@@ -189,7 +193,7 @@ function sendMacOSNotification(title, message, console, options = {}) {
       console.log(`👶 [MACOS] Process started: PID=${pid}`);
 
       // 设置清理超时
-      const cleanupTimeoutMs = getProcessCleanupTimeout();
+      const cleanupTimeoutMs = getProcessCleanupTimeout(config);
       const cleanupTimeout = setTimeout(() => {
         console.log(
           `⏰ [MACOS] Cleanup timeout reached (${cleanupTimeoutMs}ms), killing process PID=${pid}`
@@ -243,7 +247,12 @@ function sendMacOSNotification(title, message, console, options = {}) {
 }
 
 // Linux 系统通知函数 - 安全非阻塞模式 + 完整日志
-function sendLinuxNotification(title, message, console /* options = {} */) {
+function sendLinuxNotification(
+  title,
+  message,
+  console,
+  config /* options = {} */
+) {
   return new Promise(resolve => {
     const startTime = Date.now();
     console.log(
@@ -276,7 +285,7 @@ function sendLinuxNotification(title, message, console /* options = {} */) {
       console.log(`👶 [LINUX] Process started: PID=${pid}`);
 
       // 设置清理超时
-      const cleanupTimeoutMs = getProcessCleanupTimeout();
+      const cleanupTimeoutMs = getProcessCleanupTimeout(config);
       const cleanupTimeout = setTimeout(() => {
         console.log(
           `⏰ [LINUX] Cleanup timeout reached (${cleanupTimeoutMs}ms), killing process PID=${pid}`
@@ -330,22 +339,12 @@ function sendLinuxNotification(title, message, console /* options = {} */) {
 }
 
 // 跨平台通知发送函数 - 完整日志
-function sendNotification(title, message, console) {
+function sendNotification(title, message, console, config) {
   return new Promise(resolve => {
     const startTime = Date.now();
     console.log(
       `🎯 [MAIN] Starting cross-platform notification: title="${title}", message_length=${message.length}`
     );
-
-    // 加载配置以确定通知方式
-    let config;
-    try {
-      config = loadConfig(console);
-      console.log(`⚙️  [MAIN] Configuration loaded successfully`);
-    } catch (error) {
-      console.log(`❌ [MAIN] Failed to load configuration: ${error.message}`);
-      config = {};
-    }
 
     const notificationConfig = config.notification || {};
     console.log(
@@ -366,7 +365,7 @@ function sendNotification(title, message, console) {
       console.log(
         `🖥️  [MAIN] Selected platform: ${selectedPlatform} - ${selectedMethod} (preferred)`
       );
-      sendWindowsNotification(title, message, console).then(resolve);
+      sendWindowsNotification(title, message, console, config).then(resolve);
     } else if (
       process.platform === 'darwin' &&
       notificationConfig.preferNativeMacOS !== false
@@ -377,7 +376,7 @@ function sendNotification(title, message, console) {
       console.log(
         `🍎 [MAIN] Selected platform: ${selectedPlatform} - ${selectedMethod} (preferred)`
       );
-      sendMacOSNotification(title, message, console).then(resolve);
+      sendMacOSNotification(title, message, console, config).then(resolve);
     } else if (process.platform === 'linux') {
       // Linux: 使用 notify-send/zenity 系统通知
       selectedPlatform = 'Linux';
@@ -385,7 +384,7 @@ function sendNotification(title, message, console) {
       console.log(
         `🐧 [MAIN] Selected platform: ${selectedPlatform} - ${selectedMethod}`
       );
-      sendLinuxNotification(title, message, console).then(resolve);
+      sendLinuxNotification(title, message, console, config).then(resolve);
     } else {
       // 默认: 根据平台选择最佳方案
       if (process.platform === 'darwin') {
@@ -403,11 +402,11 @@ function sendNotification(title, message, console) {
       );
 
       if (process.platform === 'darwin') {
-        sendMacOSNotification(title, message, console).then(resolve);
+        sendMacOSNotification(title, message, console, config).then(resolve);
       } else if (process.platform === 'win32') {
-        sendWindowsNotification(title, message, console).then(resolve);
+        sendWindowsNotification(title, message, console, config).then(resolve);
       } else {
-        sendLinuxNotification(title, message, console).then(resolve);
+        sendLinuxNotification(title, message, console, config).then(resolve);
       }
     }
 
@@ -438,6 +437,9 @@ function loadConfig(console) {
     if (fs.existsSync(configPath)) {
       const configContent = fs.readFileSync(configPath, 'utf8');
       return JSON.parse(configContent);
+    } else {
+      // 配置文件不存在，使用默认配置
+      return getDefaultConfig();
     }
   } catch (error) {
     if (console) {
@@ -445,9 +447,13 @@ function loadConfig(console) {
         `⚠️ [CONFIG] Failed to load config file, using defaults: ${error.message}`
       );
     }
+    // 加载失败，使用默认配置
+    return getDefaultConfig();
   }
+}
 
-  // 默认配置
+// 获取默认配置
+function getDefaultConfig() {
   return {
     events: {
       Stop: {
@@ -483,9 +489,13 @@ function loadConfig(console) {
 }
 
 // 获取进程清理超时时间
-function getProcessCleanupTimeout() {
-  const config = loadConfig();
+function getProcessCleanupTimeout(config) {
   return config.notification?.timeout?.processCleanup || 6000;
+}
+
+// 获取Hook输入超时时间
+function getHookInputTimeout(config) {
+  return config.notification?.timeout?.hookInput || 5000;
 }
 
 // 获取项目名称（从路径中提取）
@@ -576,11 +586,13 @@ async function main() {
   });
 
   try {
-    const hookData = await readHookInput(console);
+    // 在main方法中一次性加载配置
+    const config = loadConfig(console);
+    console.logWithTime('=== CONFIG LOADED ===');
+
+    const hookData = await readHookInput(console, config);
     console.logWithTime('=== HOOK INPUT RECEIVED ===');
     console.log(JSON.stringify(hookData, null, 2));
-
-    const config = loadConfig(console);
 
     const { hook_event_name, cwd, session_id, message, permission_mode } =
       hookData;
@@ -669,8 +681,8 @@ async function main() {
         fullMessage.substring(0, config.display.maxMessageLength - 3) + '...';
     }
 
-    // 发送通知
-    const result = await sendNotification(title, fullMessage, console);
+    // 发送通知 (传递配置对象)
+    const result = await sendNotification(title, fullMessage, console, config);
 
     const totalDuration = Date.now() - global.startTime;
     if (result.success) {
