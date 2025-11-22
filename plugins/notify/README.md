@@ -33,10 +33,18 @@
 
 ```bash
 # 在 Claude Code 中运行
+
+# 安装marketplace
+## 从Github安装marketplace
 /plugin marketplace add startvibe/startvibe-cc-marketplace
+## 或从Gitee安装marketplace（国内无法访问Github可以使用此源）
+/plugin marketplace add https://gitee.com/startvibe/startvibe-cc-marketplace.git
 
 # 安装通知插件
 /plugin install notify@startvibe-cc-marketplace
+
+# 启用通知插件
+/plugin enable notify@startvibe-cc-marketplace
 
 # 验证安装
 /plugin list

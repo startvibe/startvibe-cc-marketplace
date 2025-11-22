@@ -19,15 +19,38 @@
 ### 前置要求
 
 - Claude Code 已安装并运行
-- 基本的 Git 知识
 
-### 安装插件市场
+### 安装
+
+#### 方法一：交互式安装
+
+在claude code中执行"/plugin"指令，进入插件管理模式，根据提示逐步操作:
+
+1. 添加marketplace：
+   ![plugin-manager](docs/images/plugin-manager.png)
+   ![add-marketplace](docs/images/add-marketplace.png)
+   marketplace可选源：
+   - Github源：startvibe/startvibe-cc-marketplace
+   - Gitee源（国内）：https://gitee.com/startvibe/startvibe-cc-marketplace.git
+
+2. 安装插件：
+   ![browse-plugins](docs/images/browse-plugins.png)
+   ![install-plugin](docs/images/install-plugin.png)
+
+3. 启用插件（如果为启用状态则需要手动启用）：
+   ![plugin-status](docs/images/manage-plugins.png)
+   ![enable-plugin](docs/images/enable-plugin.png)
+
+#### 方法二：指令安装
 
 1. **添加市场到 Claude Code**
 
    ```bash
    # 在 Claude Code 中运行
+   ## 从Github安装marketplace
    /plugin marketplace add startvibe/startvibe-cc-marketplace
+   ## 或从Gitee安装marketplace（国内无法访问Github可以使用此源）
+   /plugin marketplace add https://gitee.com/startvibe/startvibe-cc-marketplace.git
    ```
 
 2. **安装可用插件**
@@ -35,6 +58,9 @@
    ```bash
    # 安装通知插件
    /plugin install notify@startvibe-cc-marketplace
+
+   # 启用通知插件
+   /plugin enable notify@startvibe-cc-marketplace
 
    # 查看所有可用插件
    /plugin
