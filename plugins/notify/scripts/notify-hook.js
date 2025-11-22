@@ -62,78 +62,121 @@ function sendWindowsNotification(
       const escapedTitle = title.replace(/"/g, '""').replace(/'/g, "''");
       const escapedMessage = message.replace(/"/g, '""').replace(/'/g, "''");
 
-      const command = [
-        '-NoProfile',
-        '-WindowStyle',
-        'Hidden',
-        '-Command',
-        `
-          Add-Type -AssemblyName System.Windows.Forms;
-          $n = New-Object System.Windows.Forms.NotifyIcon;
-          $n.Icon = [System.Drawing.SystemIcons]::Information;
-          $n.BalloonTipTitle = '${escapedTitle}';
-          $n.BalloonTipText = '${escapedMessage}';
-          $n.Visible = $true;
-          $n.ShowBalloonTip(3000);
-          $n.Dispose();
-        `,
-      ];
+      const powershellScript = `
+        Add-Type -AssemblyName System.Windows.Forms
+        Add-Type -AssemblyName System.Drawing
 
-      console.log(
-        `📡 [WINDOWS] Spawning PowerShell process: command=${JSON.stringify(command)}`
-      );
+        $notification = New-Object System.Windows.Forms.NotifyIcon
+        $notification.Icon = [System.Drawing.SystemIcons]::Information
+        $notification.BalloonTipTitle = '${escapedTitle}'
+        $notification.BalloonTipText = '${escapedMessage}'
+        $notification.Visible = $true
 
-      const child = spawn('powershell.exe', command, {
-        stdio: 'ignore',
-        shell: false,
+        $notification.ShowBalloonTip(5000)
+        Start-Sleep -Milliseconds 5500
+        $notification.Dispose()
+      `;
+
+      const child = spawn('powershell', ['-Command', powershellScript], {
+        stdio: ['ignore', 'pipe', 'pipe'],
+        timeout: getProcessCleanupTimeout(config),
+      });
+
+      let stdout = '';
+      let stderr = '';
+
+      child.stdout?.on('data', data => {
+        stdout += data.toString();
+      });
+
+      child.stderr?.on('data', data => {
+        stderr += data.toString();
       });
 
       const pid = child.pid;
       console.log(`👶 [WINDOWS] Process started: PID=${pid}`);
 
-      // 设置清理超时，防止僵尸进程
-      const cleanupTimeoutMs = getProcessCleanupTimeout(config);
-      const cleanupTimeout = setTimeout(() => {
-        console.log(
-          `⏰ [WINDOWS] Cleanup timeout reached (${cleanupTimeoutMs}ms), killing process PID=${pid}`
-        );
-        try {
-          child.kill('SIGTERM');
-          console.log(`🔪 [WINDOWS] Process PID=${pid} killed via SIGTERM`);
-        } catch (error) {
-          console.log(
-            `❌ [WINDOWS] Failed to kill process PID=${pid}: ${error.message}`
-          );
-        }
-      }, cleanupTimeoutMs);
+      let resolved = false;
 
-      // 监听进程结束，清理定时器
+      // 统一的结果处理函数
+      const handleResult = result => {
+        if (!resolved) {
+          resolved = true;
+
+          // 无论成功还是失败，都输出完整的 stdout 和 stderr 日志
+          if (stdout) {
+            console.log(
+              `📤 [WINDOWS] Process STDOUT: PID=${pid}, content:\n${stdout}`
+            );
+          }
+          if (stderr) {
+            console.log(
+              `📤 [WINDOWS] Process STDERR: PID=${pid}, content:\n${stderr}`
+            );
+          }
+
+          resolve(result);
+        }
+      };
+
       child.on('close', (code, signal) => {
         const duration = Date.now() - startTime;
-        clearTimeout(cleanupTimeout);
-        console.log(
-          `✅ [WINDOWS] Process closed: PID=${pid}, code=${code}, signal=${signal}, duration=${duration}ms`
-        );
+
+        if (code === 0) {
+          console.log(
+            `✅ [WINDOWS] Process completed successfully: PID=${pid}, code=${code}, signal=${signal}, duration=${duration}ms`
+          );
+          handleResult({
+            success: true,
+            stdout: 'PowerShell notification sent',
+            stderr: stderr,
+            method: 'windows-system',
+            pid,
+          });
+        } else if (
+          signal === 'SIGTERM' ||
+          signal === 'SIGKILL' ||
+          code === null
+        ) {
+          // 超时或被强制终止
+          console.log(
+            `⏰ [WINDOWS] Process timed out or terminated: PID=${pid}, signal=${signal}, code=${code}, duration=${duration}ms`
+          );
+          handleResult({
+            success: false,
+            error: `Process timed out after ${getProcessCleanupTimeout(config)}ms`,
+            stdout: stdout,
+            stderr: stderr,
+            method: 'windows-system',
+            timedOut: true,
+          });
+        } else {
+          // 其他错误退出
+          console.log(
+            `❌ [WINDOWS] Process failed: PID=${pid}, code=${code}, signal=${signal}, duration=${duration}ms`
+          );
+          handleResult({
+            success: false,
+            error: `PowerShell failed with code ${code}: ${stderr}`,
+            stdout: stdout,
+            stderr: stderr,
+            method: 'windows-system',
+          });
+        }
       });
 
       child.on('error', error => {
         const duration = Date.now() - startTime;
-        clearTimeout(cleanupTimeout);
         console.log(
           `❌ [WINDOWS] Process error: PID=${pid}, error=${error.message}, duration=${duration}ms`
         );
-      });
-
-      const duration = Date.now() - startTime;
-      console.log(
-        `✨ [WINDOWS] Notification sent successfully: PID=${pid}, init_duration=${duration}ms`
-      );
-
-      resolve({
-        success: true,
-        stdout: 'Windows notification sent (safe mode)',
-        method: 'windows-system',
-        pid,
+        handleResult({
+          success: false,
+          error: `PowerShell notification failed: ${error.message}`,
+          stdout: stdout,
+          stderr: stderr,
+          method: 'windows-system',
+        });
       });
     } catch (error) {
       const duration = Date.now() - startTime;
